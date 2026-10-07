@@ -1,11 +1,12 @@
 # Acalanes Data Fest 2026
 
-Landing page for the Acalanes Data Science Club hackathon: a light,
-minimalist, typography-led design — off-white background, near-black text,
-black pill buttons.
+Ultra-minimal landing page for the Acalanes Data Science Club hackathon:
+a single centered viewport — light nav, giant Poppins headline
+("Acalanes Data Fest 2026", "2026" in school blue), one subline, one meta
+line, one blue "Follow for updates" button, and a slim footer.
 
 Instagram [@aca.datasci.club](https://instagram.com/aca.datasci.club) is the
-signup path; event date, location, and registration are TBD.
+only signup path; event date, location, and registration are TBD.
 
 ## Develop
 
@@ -19,10 +20,9 @@ npm run preview  # preview the production build
 Project layout:
 
 - `index.html` — Vite entry at the repo root
-- `src/main.js` — entry module (imports CSS and nav/reveal logic)
-- `src/menu.js` — mobile nav + scroll-reveal
+- `src/main.js` — entry module (imports CSS)
 - `src/style.css` — all styles
-- `public/` — static assets served as-is (`favicon.svg`)
+- `public/` — static assets served as-is (`favicon.svg`, blue "A" on white)
 
 ## Deploy (Vercel)
 
