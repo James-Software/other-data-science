@@ -298,5 +298,5 @@
   var img = new Image();
   img.onload = function () { start(img); };
   img.onerror = function () { /* keep the static fallback image */ };
-  img.src = "assets/acalanes-a.png";
+  img.src = "acalanes-a.png";
 })();
