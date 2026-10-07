@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#04060b" />
+    <meta
+      name="description"
+      content="Acalanes Data Fest is a student-led hackathon for curious minds, real problems, and creative solutions. Details coming soon."
+    />
+    <title>Acalanes Data Fest / Hackathon</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+    <script src="coin.js" defer></script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <div class="site-shell" id="top">
+      <header class="site-header" aria-label="Site header">
+        <a class="wordmark" href="#top" aria-label="Acalanes Data Fest home">
+          <img class="wordmark-mark" src="assets/acalanes-a.png" alt="" aria-hidden="true" />
+          <span class="wordmark-text"><span>ACALANES</span><strong>DATA FEST</strong></span>
+        </a>
+
+        <nav class="primary-nav" id="primary-nav" aria-label="Primary navigation">
+          <a href="#about">ABOUT</a>
+          <a href="#format">FORMAT</a>
+          <a href="#logistics">LOGISTICS</a>
+          <a class="nav-action" href="https://instagram.com/aca.datasci.club" target="_blank" rel="noreferrer">
+            FOLLOW UPDATES
+          </a>
+        </nav>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+          <span class="sr-only">Open navigation</span>
+          <span class="menu-line"></span>
+          <span class="menu-line"></span>
+        </button>
+      </header>
+
+      <main id="main-content">
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-copy reveal">
+            <p class="eyebrow">ACALANES DATA SCIENCE CLUB &mdash; HACKATHON</p>
+            <h1 id="hero-title">DATA IS A<br /><span>TEAM SPORT.</span></h1>
+            <p class="lede">
+              Acalanes Data Fest is a student-run hackathon bringing together curious minds to turn data into ideas, and ideas into impact.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="https://instagram.com/aca.datasci.club" target="_blank" rel="noreferrer">
+                <span>SIGNAL INTEREST</span>
+                <svg aria-hidden="true" viewBox="0 0 28 16">
+                  <path d="M1 8h24M18 1l7 7-7 7" />
+                </svg>
+              </a>
+              <a class="button button-ghost" href="#format">
+                <span>HOW IT WORKS</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="hero-visual reveal reveal-delay">
+            <div class="coin-stage" id="coin-stage" role="img" aria-label="Acalanes A logo spinning in 3D">
+              <img class="coin-static" src="assets/acalanes-a.png" alt="" />
+            </div>
+            <div class="coin-shadow" aria-hidden="true"></div>
+            <p class="coin-caption">THE ACALANES A &mdash; LIVE IN 3D</p>
+          </div>
+        </section>
+
+        <section class="content-section about-section" id="about" aria-labelledby="about-title">
+          <div class="section-marker reveal">
+            <span>ABOUT</span>
+            <span class="section-rule"></span>
+          </div>
+
+          <div class="about-grid">
+            <div class="section-copy reveal">
+              <h2 id="about-title">A STUDENT-LED<br />DATA HACKATHON<br />AT ACALANES.</h2>
+              <p>
+                Acalanes Data Fest brings together students who are curious about data, creativity, and real-world problem solving. Whether you&rsquo;re new to data or already deep in it, this is a space to learn, build, and collaborate with peers across Acalanes.
+              </p>
+            </div>
+
+            <div class="about-diagram reveal reveal-delay">
+              <svg class="venn" viewBox="0 0 520 300" role="img" aria-labelledby="venn-title venn-desc">
+                <title id="venn-title">Curiosity and collaboration overlap</title>
+                <desc id="venn-desc">Two circles labeled curiosity and collaboration overlap at better questions.</desc>
+                <defs>
+                  <pattern id="dotPattern" width="9" height="9" patternUnits="userSpaceOnUse">
+                    <circle cx="4" cy="4" r="1.6" fill="#2f6fe4" />
+                  </pattern>
+                </defs>
+                <circle cx="205" cy="126" r="92" fill="none" stroke="currentColor" stroke-width="1.2" />
+                <circle cx="315" cy="126" r="92" fill="none" stroke="currentColor" stroke-width="1.2" />
+                <path d="M260 49a92 92 0 0 1 0 154 92 92 0 0 1 0-154Z" fill="url(#dotPattern)" opacity=".9" />
+                <text x="154" y="130">CURIOSITY</text>
+                <text x="310" y="130">COLLABORATION</text>
+                <text x="260" y="254" text-anchor="middle">BETTER QUESTIONS</text>
+                <path d="M260 20v-12M260 280v12M135 126h-12M397 126h12" />
+                <path d="M133 111l-8-8M387 143l8 8" />
+              </svg>
+              <div class="about-side-note">DIFFERENT PERSPECTIVES<br />REAL PROBLEMS<br />CREATIVE SOLUTIONS</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="content-section format-section" id="format" aria-labelledby="format-title">
+          <div class="section-marker reveal">
+            <span>FORMAT</span>
+            <span class="section-rule"></span>
+            <span class="section-marker-note">FROM DATA TO IMPACT, TOGETHER.</span>
+          </div>
+
+          <div class="format-steps" id="format-title">
+            <article class="format-step reveal">
+              <span class="step-number">01</span>
+              <h2>EXPLORE</h2>
+              <p>Form a team, choose a problem, and dig into a dataset. Get curious, ask questions, and define your angle.</p>
+            </article>
+            <div class="step-arrow" aria-hidden="true"><svg viewBox="0 0 28 16"><path d="M1 8h24M18 1l7 7-7 7" /></svg></div>
+            <article class="format-step reveal reveal-delay">
+              <span class="step-number">02</span>
+              <h2>BUILD</h2>
+              <p>Turn your ideas into a working prototype. Analyze, design, and iterate with your team, with support from peers and mentors.</p>
+            </article>
+            <div class="step-arrow" aria-hidden="true"><svg viewBox="0 0 28 16"><path d="M1 8h24M18 1l7 7-7 7" /></svg></div>
+            <article class="format-step reveal reveal-delay-2">
+              <span class="step-number">03</span>
+              <h2>SHARE</h2>
+              <p>Present your project, demo what you built, and share your insights with the Acalanes community.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="content-section logistics-section" id="logistics" aria-labelledby="logistics-title">
+          <div class="section-marker reveal">
+            <span id="logistics-title">LOGISTICS</span>
+            <span class="section-rule"></span>
+            <span class="section-marker-note">DETAILS COMING SOON.</span>
+          </div>
+
+          <div class="logistics-grid">
+            <article class="logistics-item reveal">
+              <svg aria-hidden="true" viewBox="0 0 42 42">
+                <rect x="6" y="8" width="30" height="29" rx="1" />
+                <path d="M12 4v9M30 4v9M6 17h30" />
+              </svg>
+              <span class="logistics-label">DATE</span>
+              <strong>TBD</strong>
+            </article>
+            <article class="logistics-item reveal reveal-delay">
+              <svg aria-hidden="true" viewBox="0 0 42 42">
+                <path d="M21 38s12-12.2 12-21A12 12 0 0 0 9 17c0 8.8 12 21 12 21Z" />
+                <circle cx="21" cy="17" r="3.5" />
+              </svg>
+              <span class="logistics-label">LOCATION</span>
+              <strong>TBD</strong>
+            </article>
+            <article class="logistics-item reveal reveal-delay-2">
+              <svg aria-hidden="true" viewBox="0 0 42 42">
+                <path d="M9 5h19l6 6v26H9zM28 5v7h6M15 20h13M15 27h13" />
+              </svg>
+              <span class="logistics-label">REGISTRATION</span>
+              <strong>TBD</strong>
+            </article>
+          </div>
+
+          <p class="logistics-note reveal">
+            Want to be first to know? <a href="https://instagram.com/aca.datasci.club" target="_blank" rel="noreferrer">Follow @aca.datasci.club</a> for announcements.
+          </p>
+        </section>
+      </main>
+
+      <footer class="site-footer" id="updates">
+        <div class="footer-brand reveal">
+          <a class="wordmark" href="#top" aria-label="Back to top">
+            <img class="wordmark-mark" src="assets/acalanes-a.png" alt="" aria-hidden="true" />
+            <span class="wordmark-text"><span>ACALANES</span><strong>DATA FEST</strong></span>
+          </a>
+          <p>Acalanes students. Real data. A more curious tomorrow.</p>
+        </div>
+
+        <div class="footer-updates reveal reveal-delay">
+          <span class="footer-label">QUESTIONS / UPDATES</span>
+          <a href="https://instagram.com/aca.datasci.club" target="_blank" rel="noreferrer">
+            <svg aria-hidden="true" viewBox="0 0 32 32">
+              <rect x="4" y="4" width="24" height="24" rx="7" />
+              <circle cx="16" cy="16" r="5.5" />
+              <circle cx="23" cy="9" r="1.25" class="instagram-dot" />
+            </svg>
+            <span>@aca.datasci.club</span>
+          </a>
+        </div>
+
+        <div class="footer-note" aria-hidden="true">SAME<br />STUDENTS<br />BRIGHTER<br />QUESTIONS<span class="plus-mark">+</span></div>
+      </footer>
+    </div>
+  </body>
+</html>
