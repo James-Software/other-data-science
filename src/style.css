@@ -161,6 +161,72 @@ h1 {
   font-size: 0.9rem;
 }
 
+/* ---- faq: one quiet centered column ---- */
+
+.faq {
+  width: min(640px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 24px 0 80px;
+}
+
+.faq h2 {
+  margin: 0 0 24px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
+.faq details {
+  border-top: 1px solid #e6e6e6;
+}
+
+.faq details:last-child {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+  position: relative;
+  padding: 20px 40px 20px 0;
+  font-weight: 500;
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary::after {
+  content: "+";
+  position: absolute;
+  right: 4px;
+  top: 18px;
+  color: var(--blue);
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.faq details[open] summary::after {
+  content: "\2013";
+}
+
+.faq details p {
+  margin: 0 0 22px;
+  color: var(--muted);
+}
+
+.faq details p a {
+  color: var(--blue);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.faq details p a:hover {
+  text-decoration: underline;
+}
+
 /* ---- footer: one slim centered line ---- */
 
 .site-footer {
