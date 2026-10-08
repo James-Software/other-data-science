@@ -1,28 +1,33 @@
-// Calm-water square-grid backdrop for the hero.
+// Square-grid pixel backdrop for the hero.
 //
 // Concept inspired by https://github.com/NayanVangala/rein (flickering-grid)
 // — clean-room vanilla JS implementation written for this site; no code
 // copied.
 //
-// Resting state: every square sits at one uniform color and opacity —
-// perfectly calm water. On load, squares fade in with staggered randomized
-// delays and settle. Moving the pointer (or touching) disturbs the surface:
-// ripples emanate from each touch point as decaying traveling waves. Each
-// square's opacity (plus a slight scale pulse) follows
-//   base + AMP · sin(k·d − speed·age) · e^(−d/spatial) · e^(−age/tau)
-// summed over all active ripples. Ripples die out and the grid eases back
-// to calm. DPR-aware; the rAF loop runs only while animating and while the
-// hero is visible; one static frame under prefers-reduced-motion.
+// Ambient motion follows rein's flickering-grid model: every square holds
+// its own opacity and, independently of the others, snaps to a new random
+// opacity at a low stochastic rate (probability flickerChance * dt per
+// frame) — a continuous gentle shimmer across the whole field, never a
+// traveling wave. Moving the pointer (or touching) disturbs the field:
+// ripples emanate from each touch point as decaying traveling waves that
+// add on top of the ambient shimmer, then die out and the shimmer carries
+// on underneath. One uniform blue for every square. DPR-aware; the rAF
+// loop runs while the hero is visible; one static frame under
+// prefers-reduced-motion.
 
 // One uniform vibrant blue for every decorative square (#2E4BFF).
 // (Brand elements elsewhere — buttons, headline accent, links — stay
 // in vibrant brand blue #0d45d2.)
 const BLUE = '46,75,255';
-const REST_OPACITY = 0.10; // uniform resting opacity for every square
 const CELL = 5; // square size, CSS px
 const GAP = 7; // gap between squares, CSS px
 
-// Load fade-in: each square waits a random delay, then eases to rest.
+// Ambient shimmer — rein's flickering-grid model: per-square stochastic
+// opacity snaps, each square re-rolled independently.
+const FLICKER_CHANCE = 0.3; // per-square, per-second re-roll probability
+const MAX_OP = 0.3; // opacity ceiling (rein's maxOpacity)
+
+// Load entrance: squares fade from 0 to their shimmer values, staggered.
 const FADE_SPREAD = 1.0; // max random delay, seconds
 const FADE_DUR = 0.7; // per-square fade duration, seconds
 
@@ -57,7 +62,8 @@ export function initHeroGrid() {
   let n = 0;
   let cx = new Float32Array(0); // cell centers, CSS px (rebuilt on resize)
   let cy = new Float32Array(0);
-  let base = new Float32Array(0); // fade-in value per square (→ REST_OPACITY)
+  let shimmer = new Float32Array(0); // ambient opacity per square (rein model)
+  let fade = new Float32Array(0); // load fade-in multiplier per square (→ 1)
   let delays = new Float32Array(0); // per-square fade-in delay, seconds
   let wave = new Float32Array(0); // per-frame ripple accumulator
   let fadeDone = false;
@@ -68,6 +74,7 @@ export function initHeroGrid() {
   let lastSpawnT = -10;
   let lastSpawnX = 0;
   let lastSpawnY = 0;
+  let lastT = t0;
 
   function build(animateIn) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -81,7 +88,8 @@ export function initHeroGrid() {
     n = cols * rows;
     cx = new Float32Array(n);
     cy = new Float32Array(n);
-    base = new Float32Array(n);
+    shimmer = new Float32Array(n);
+    fade = new Float32Array(n);
     delays = new Float32Array(n);
     wave = new Float32Array(n);
     let i = 0;
@@ -89,8 +97,9 @@ export function initHeroGrid() {
       for (let c = 0; c < cols; c++, i++) {
         cx[i] = c * step + CELL / 2;
         cy[i] = r * step + CELL / 2;
+        shimmer[i] = Math.random() * MAX_OP;
         delays[i] = Math.random() * FADE_SPREAD;
-        base[i] = animateIn ? 0 : REST_OPACITY;
+        fade[i] = animateIn ? 0 : 1;
       }
     }
     ripples.length = 0;
@@ -152,10 +161,32 @@ export function initHeroGrid() {
     kick();
   }
 
-  function draw(t) {
+  function draw(t, dt) {
     const w = layer.clientWidth;
     const h = layer.clientHeight;
     ctx.clearRect(0, 0, w, h);
+    if (!fadeDone) {
+      let done = true;
+      for (let i = 0; i < n; i++) {
+        if (fade[i] >= 1) continue;
+        const p = (t - delays[i]) / FADE_DUR;
+        if (p >= 1) {
+          fade[i] = 1;
+        } else {
+          done = false;
+          if (p > 0) fade[i] = 1 - Math.pow(1 - p, 3);
+        }
+      }
+      fadeDone = done;
+    }
+    // Rein's ambient shimmer: each square independently re-rolls its
+    // opacity with probability FLICKER_CHANCE * dt.
+    if (!reduced && dt > 0) {
+      const chance = FLICKER_CHANCE * dt;
+      for (let i = 0; i < n; i++) {
+        if (Math.random() < chance) shimmer[i] = Math.random() * MAX_OP;
+      }
+    }
     wave.fill(0);
     for (let ri = ripples.length - 1; ri >= 0; ri--) {
       const rp = ripples[ri];
@@ -182,7 +213,7 @@ export function initHeroGrid() {
     let i = 0;
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++, i++) {
-        let o = base[i] + wave[i];
+        let o = shimmer[i] * fade[i] + wave[i];
         if (o < 0.004) continue;
         if (o > MAX_DRAW_OPACITY) o = MAX_DRAW_OPACITY;
         const wv = wave[i] / RIPPLE_AMP;
@@ -203,32 +234,21 @@ export function initHeroGrid() {
       return;
     }
     const t = performance.now() / 1000 - t0;
-    if (!fadeDone) {
-      let done = true;
-      for (let i = 0; i < n; i++) {
-        if (base[i] >= REST_OPACITY) continue;
-        const p = (t - delays[i]) / FADE_DUR;
-        if (p >= 1) {
-          base[i] = REST_OPACITY;
-        } else {
-          done = false;
-          if (p > 0) base[i] = REST_OPACITY * (1 - Math.pow(1 - p, 3));
-        }
-      }
-      fadeDone = done;
-    }
-    draw(t);
-    if (!fadeDone || ripples.length > 0) {
-      raf = requestAnimationFrame(tick);
-    }
-    // Otherwise settled: the calm frame stays, the loop stops.
+    const dt = Math.min(0.1, Math.max(0, t - lastT));
+    lastT = t;
+    draw(t, dt);
+    // Ambient shimmer never settles: keep the loop running while visible.
+    raf = requestAnimationFrame(tick);
   }
 
   function slowPoll() {
     slowTimer = 0;
     if (!inView) return;
     if (heroActive()) {
-      if (!raf) raf = requestAnimationFrame(tick);
+      if (!raf) {
+        lastT = performance.now() / 1000 - t0;
+        raf = requestAnimationFrame(tick);
+      }
     } else {
       slowTimer = window.setTimeout(slowPoll, 500);
     }
@@ -236,8 +256,10 @@ export function initHeroGrid() {
 
   function kick() {
     if (reduced || raf || slowTimer || !inView) return;
-    if (heroActive()) raf = requestAnimationFrame(tick);
-    else slowTimer = window.setTimeout(slowPoll, 500);
+    if (heroActive()) {
+      lastT = performance.now() / 1000 - t0;
+      raf = requestAnimationFrame(tick);
+    } else slowTimer = window.setTimeout(slowPoll, 500);
   }
 
   function cancel() {
@@ -256,8 +278,7 @@ export function initHeroGrid() {
       (entries) => {
         inView = entries[0].isIntersecting;
         if (inView) {
-          // Resume if there is anything left to animate.
-          if (!fadeDone || ripples.length > 0) kick();
+          kick(); // ambient motion always has something to animate
         } else {
           cancel();
         }
@@ -272,15 +293,15 @@ export function initHeroGrid() {
     () => {
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(() => {
-        build(false); // settle straight to calm; no replay of the fade-in
-        draw(performance.now() / 1000 - t0);
+        build(false); // re-roll the shimmer; no replay of the fade-in
+        draw(performance.now() / 1000 - t0, 0);
       }, 120);
     },
     { passive: true },
   );
 
   build(!reduced);
-  draw(performance.now() / 1000 - t0); // one frame immediately (empty unless reduced)
+  draw(performance.now() / 1000 - t0, 0); // one frame immediately
   if (!reduced) {
     layer.addEventListener('pointermove', onMove, { passive: true });
     layer.addEventListener('pointerdown', onDown, { passive: true });
