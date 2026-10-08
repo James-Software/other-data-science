@@ -7,11 +7,12 @@
 // whisper of pixels drifting through the middle so it never looks cut
 // out.
 //
-// Touching the field (pointer move / press) spawns a few soft, quickly
-// decaying ripple rings on top of the flow. Resolution-independent: the
-// canvas runs at dither-cell resolution and is upscaled with
-// image-rendering: pixelated. The rAF loop runs only while the hero is
-// visible; one static frame under prefers-reduced-motion.
+// The cursor parts the pixels like water: nearby pixels are pushed
+// radially away from the pointer with a smooth quadratic falloff, then
+// ease back into the cascade flow once the pointer moves on.
+// Resolution-independent: the canvas runs at dither-cell resolution and
+// is upscaled with image-rendering: pixelated. The rAF loop runs only
+// while the hero is visible; one static frame under prefers-reduced-motion.
 
 const CELL = 5; // dither cell size, CSS px
 const BLUE_R = 46;
@@ -31,18 +32,12 @@ const BAYER = [
   63, 31, 55, 23, 61, 29, 53, 21,
 ];
 
-// Soft touch ripples, evaluated in the same value domain as the field.
-// Deliberately gentle: few concurrent rings, low amplitude, fast decay.
-const R_AMP = 0.26; // peak value added at a wave crest
-const R_WAVELENGTH = 22; // cells
-const R_SPEED = 40; // cells/s outward
-const R_SPATIAL = 24; // cells, exponential decay length
-const R_TAU = 0.55; // s, exponential time constant
-const R_LIFE = 1.3; // s, retire ripples older than this
-const R_MAX = 3; // cap on concurrent ripples
-const R_CUT = 90; // cells, beyond this the contribution is ~0
-const SPAWN_GAP = 0.4; // s, min interval between pointermove spawns
-const SPAWN_DIST = 12; // cells, min distance from the previous spawn
+// Cursor push: part the pixels like water. Displacement is applied only
+// to each particle's rendered position — the underlying cascade flow is
+// untouched, so pixels rejoin it seamlessly as the offset eases to zero.
+const PUSH_R = 26; // cells, radius of influence around the pointer
+const PUSH_MAX = 9; // cells, max displacement (at the pointer itself)
+const PUSH_EASE = 6; // 1/s, exponential smoothing rate for offsets
 
 const FRAME_MS = 40; // ~25fps is plenty for 5px cells
 const STEP = FRAME_MS / 1000;
@@ -71,12 +66,10 @@ export function initHeroGrid() {
   let cx = 0; // horizontal center, in cells
   let img = null;
   let acc = new Float32Array(0); // per-cell splatted pixel density
-  let wave = new Float32Array(0); // per-frame touch-ripple accumulator
-  let parts = []; // cascade particles: {x, y, vy, seed, age} in cells
-  const ripples = []; // {t0, ox, oy} in cells
-  let lastSpawnT = -10;
-  let lastSpawnX = 0;
-  let lastSpawnY = 0;
+  let parts = []; // cascade particles: {x, y, vy, seed, age, ox, oy} in cells
+  let ptx = 0; // pointer position, in cells
+  let pty = 0;
+  let pointerActive = false; // pointer currently over the hero
   let raf = 0;
   let slowTimer = 0;
   let lastFrame = 0;
@@ -106,6 +99,8 @@ export function initHeroGrid() {
     p.vy = 13 + Math.random() * 9; // cells/s downward
     p.seed = Math.random();
     p.age = 0;
+    p.ox = 0; // cursor-push render offset (eases back to 0)
+    p.oy = 0;
   }
 
   function buildField() {
@@ -138,6 +133,44 @@ export function initHeroGrid() {
     }
   }
 
+  // Ease each particle's render offset toward its push target: radially
+  // away from the pointer with quadratic falloff inside PUSH_R, zero
+  // outside — so pixels part around the cursor and close back up behind
+  // it. Frame-rate independent exponential smoothing keeps it fluid.
+  function pushUpdate(dt) {
+    const k = 1 - Math.exp(-dt * PUSH_EASE);
+    if (pointerActive) {
+      const R2 = PUSH_R * PUSH_R;
+      for (let i = 0; i < parts.length; i++) {
+        const p = parts[i];
+        const dx = p.x - ptx;
+        const dy = p.y - pty;
+        const d2 = dx * dx + dy * dy;
+        let tx = 0;
+        let ty = 0;
+        if (d2 < R2) {
+          if (d2 > 1e-6) {
+            const d = Math.sqrt(d2);
+            const f = 1 - d / PUSH_R;
+            const s = (PUSH_MAX * f * f) / d;
+            tx = dx * s;
+            ty = dy * s;
+          } else {
+            tx = PUSH_MAX; // exactly on the pointer: nudge +x; next frame resolves
+          }
+        }
+        p.ox += (tx - p.ox) * k;
+        p.oy += (ty - p.oy) * k;
+      }
+    } else {
+      for (let i = 0; i < parts.length; i++) {
+        const p = parts[i];
+        p.ox += (0 - p.ox) * k;
+        p.oy += (0 - p.oy) * k;
+      }
+    }
+  }
+
   function resize() {
     const w = layer.clientWidth;
     const h = layer.clientHeight;
@@ -149,8 +182,6 @@ export function initHeroGrid() {
     canvas.height = rows;
     img = ctx.createImageData(cols, rows);
     acc = new Float32Array(n);
-    wave = new Float32Array(n);
-    ripples.length = 0;
     buildField();
     // Pre-roll so the first paint already shows the cascade mid-flow.
     for (let k = 0; k < 70; k++) advance(STEP, k * STEP);
@@ -166,11 +197,6 @@ export function initHeroGrid() {
     return rect.bottom > 0 && rect.top < window.innerHeight;
   }
 
-  function spawnRipple(x, y, t) {
-    if (ripples.length >= R_MAX) ripples.shift();
-    ripples.push({ t0: t, ox: x, oy: y });
-  }
-
   function layerCell(e) {
     const rect = layer.getBoundingClientRect();
     return {
@@ -181,38 +207,35 @@ export function initHeroGrid() {
 
   function onMove(e) {
     if (reduced || !inView || !heroActive()) return;
-    const t = performance.now() / 1000 - t0;
-    if (t - lastSpawnT < SPAWN_GAP) return;
     const p = layerCell(e);
-    const dx = p.x - lastSpawnX;
-    const dy = p.y - lastSpawnY;
-    if (dx * dx + dy * dy < SPAWN_DIST * SPAWN_DIST) return;
-    lastSpawnT = t;
-    lastSpawnX = p.x;
-    lastSpawnY = p.y;
-    spawnRipple(p.x, p.y, t);
+    ptx = p.x;
+    pty = p.y;
+    pointerActive = true;
     kick();
   }
 
   function onDown(e) {
     if (reduced || !inView || !heroActive()) return;
-    const t = performance.now() / 1000 - t0;
     const p = layerCell(e);
-    lastSpawnT = t;
-    lastSpawnX = p.x;
-    lastSpawnY = p.y;
-    spawnRipple(p.x, p.y, t);
+    ptx = p.x;
+    pty = p.y;
+    pointerActive = true;
     kick();
   }
 
-  function draw(t) {
+  function onLeave() {
+    pointerActive = false; // offsets ease back; pixels rejoin the flow
+  }
+
+  function draw() {
     const data = img.data;
     acc.fill(0);
-    // Splat particles into the cell grid with per-particle fade.
+    // Splat particles into the cell grid with per-particle fade, at
+    // their push-displaced render positions.
     for (let i = 0; i < parts.length; i++) {
       const p = parts[i];
-      const ix = Math.floor(p.x);
-      const iy = Math.floor(p.y);
+      const ix = Math.floor(p.x + p.ox);
+      const iy = Math.floor(p.y + p.oy);
       if (ix < 0 || iy < 0 || ix >= cols || iy >= rows) continue;
       const fadeIn = smoothstep(0, 0.6, p.age);
       const fadeOut = 1 - smoothstep(rows - 14, rows - 1, p.y);
@@ -222,44 +245,6 @@ export function initHeroGrid() {
       const s = acc[idx] + a;
       acc[idx] = s > 1.15 ? 1.15 : s;
     }
-    // Layer touch ripples into the accumulator (bounding-box walk so we
-    // never iterate the whole grid per ripple).
-    wave.fill(0);
-    const RK = (Math.PI * 2) / R_WAVELENGTH;
-    const cut2 = R_CUT * R_CUT;
-    for (let ri = ripples.length - 1; ri >= 0; ri--) {
-      const rp = ripples[ri];
-      const age = t - rp.t0;
-      if (age > R_LIFE) {
-        ripples.splice(ri, 1);
-        continue;
-      }
-      let tamp = R_AMP * Math.exp(-age / R_TAU);
-      // Ease the tail to zero so retiring a ripple is pop-free.
-      const tail = R_LIFE - age;
-      if (tail < 0.3) tamp *= tail / 0.3;
-      if (tamp < 0.004) {
-        ripples.splice(ri, 1);
-        continue;
-      }
-      const phase = R_SPEED * age;
-      const c0 = Math.max(0, Math.floor(rp.ox - R_CUT));
-      const c1 = Math.min(cols - 1, Math.ceil(rp.ox + R_CUT));
-      const r0 = Math.max(0, Math.floor(rp.oy - R_CUT));
-      const r1 = Math.min(rows - 1, Math.ceil(rp.oy + R_CUT));
-      for (let y = r0; y <= r1; y++) {
-        const rowOff = y * cols;
-        const dy = y - rp.oy;
-        for (let x = c0; x <= c1; x++) {
-          const dx = x - rp.ox;
-          const d2 = dx * dx + dy * dy;
-          if (d2 > cut2) continue;
-          const d = Math.sqrt(d2);
-          wave[rowOff + x] +=
-            tamp * Math.sin(RK * d - phase) * Math.exp(-d / R_SPATIAL);
-        }
-      }
-    }
     // Dither the field into three levels of the one blue: transparent
     // (page white shows through), mid blue, full blue.
     let p = 0;
@@ -267,7 +252,7 @@ export function initHeroGrid() {
       const rowOff = y * cols;
       const brow = (y & 7) * 8;
       for (let x = 0; x < cols; x++) {
-        const v = acc[rowOff + x] + wave[rowOff + x];
+        const v = acc[rowOff + x];
         const thr = (BAYER[brow + (x & 7)] + 0.5) / 64;
         const t1 = thr * 0.55;
         const t2 = t1 + 0.45;
@@ -302,7 +287,8 @@ export function initHeroGrid() {
       lastFrame = now;
       const t = now / 1000 - t0;
       advance(STEP, t);
-      draw(t);
+      pushUpdate(STEP);
+      draw();
     }
     raf = requestAnimationFrame(tick);
   }
@@ -358,7 +344,7 @@ export function initHeroGrid() {
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(() => {
         resize();
-        draw(performance.now() / 1000 - t0);
+        draw();
       }, 120);
     },
     { passive: true },
@@ -366,12 +352,14 @@ export function initHeroGrid() {
 
   resize();
   if (reduced) {
-    draw(0); // one static frame, no loop, no listeners
+    draw(); // one static frame, no loop, no listeners
     return;
   }
-  draw(0);
+  draw();
   layer.addEventListener('pointermove', onMove, { passive: true });
   layer.addEventListener('pointerdown', onDown, { passive: true });
+  layer.addEventListener('pointerleave', onLeave, { passive: true });
+  layer.addEventListener('pointercancel', onLeave, { passive: true });
   // Fade the field in once the first frame is painted.
   requestAnimationFrame(() => {
     canvas.style.opacity = '1';
