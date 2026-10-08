@@ -8,8 +8,10 @@
 //   p 0.25-0.35  white text: "The Bay Area has always been the center of technology."
 //   p 0.35-0.50  3D California hologram (CSS idle animation, scroll-driven opacity)
 //   p 0.51-0.65  text 1, hologram, and squares fade out back to white
-//   p 0.70-0.92  final text: in 0.70-0.78, brief hold, out 0.84-0.92
-//                 (floating logos fade out with the final-text layer)
+//   p 0.70-1.00  final text: in 0.70-0.78, hold 0.78-0.94, out 0.94-1.00
+//                 (floating logos fade out with the final-text layer;
+//                  the dissolve runs right up to the pin release so the
+//                  next section arrives immediately underneath)
 //
 // prefers-reduced-motion (or no JS): the cinematic never enables and the
 // page falls back to a static hero + final text in normal flow.
@@ -160,10 +162,10 @@ export function initCinematic() {
       `translateY(${(vh * 0.05 * hIn).toFixed(1)}px) scale(${(0.9 + 0.1 * hIn).toFixed(3)})`,
     );
 
-    // final text: in 0.70-0.78, brief hold, out 0.84-0.92
+    // final text: in 0.70-0.78, hold 0.78-0.94, out 0.94-1.00
     // (the big school logo lives inside #layerFinal, so it fades with the text)
     const fIn = smooth(0.70, 0.78, p);
-    const fOut = smooth(0.84, 0.92, p);
+    const fOut = smooth(0.94, 1.0, p);
     setLayer(final, fIn * (1 - fOut), `translateY(${(28 * (1 - fIn)).toFixed(1)}px)`);
   }
 
