@@ -93,6 +93,27 @@ a {
 
 /* ---- hero: one centered viewport ---- */
 
+.layer-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+/* flickering square-grid backdrop (see hero-grid.js) */
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.site-header,
+.hero {
+  position: relative;
+  z-index: 1;
+}
+
 .hero {
   width: var(--content);
   margin: 0 auto;
@@ -124,6 +145,32 @@ h1 {
 
 .h1-blue {
   color: var(--blue);
+}
+
+/* letter-by-letter headline roll-in (see hero-intro.js) */
+.hero h1 .ch {
+  display: inline-block;
+  white-space: pre;
+  opacity: 0;
+  animation: ch-roll 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+@keyframes ch-roll {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em) rotate(6deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero h1 .ch {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 .subline {

@@ -4,7 +4,7 @@
 // maps deterministically to phases — no time-based motion in the phase
 // logic; a rAF-throttled passive scroll listener re-renders on scroll only.
 //
-//   p 0.00-0.30  blue squares pop in until the stage is covered
+//   p 0.00-0.30  blue squares pixel-dissolve in until the stage is covered
 //   p 0.30-0.45  white text: "The Bay Area has always been the center of technology."
 //   p 0.45-0.65  3D California hologram (CSS idle animation, scroll-driven opacity)
 //   p 0.65-0.80  text 1, hologram, and squares fade out back to white
@@ -81,8 +81,13 @@ export function initCinematic() {
     }
     const n = cells.length;
     cells.forEach((cell, i) => {
-      // spread pop-in thresholds across phase A (0.02 -> 0.24, full by 0.29)
-      cell.threshold = 0.02 + (i / Math.max(1, n - 1)) * 0.22;
+      // Spread dissolve thresholds across phase A (0.02 -> 0.22). Each cell
+      // grows from its center with a small randomized delay, giving a
+      // pixel-dissolve feel as scroll progress increases. Full coverage
+      // lands by p = 0.30, right as the Bay Area text arrives.
+      cell.threshold = 0.02 + (i / Math.max(1, n - 1)) * 0.2;
+      cell.delay = rand() * 0.04;
+      cell.jitter = 0.85 + rand() * 0.15;
     });
 
     pinTop = pin.getBoundingClientRect().top + window.scrollY;
@@ -103,10 +108,14 @@ export function initCinematic() {
     ctx.fillStyle = BLUE;
     for (let i = 0; i < cells.length; i++) {
       const cell = cells[i];
-      const local = smooth(cell.threshold, cell.threshold + 0.05, p);
-      if (local <= 0) continue;
-      const size = cellPx * (0.55 + 0.45 * local); // pop-in scale
-      ctx.globalAlpha = local * fade;
+      // pixel-dissolve: each cell grows from its center once its
+      // (threshold + randomized delay) window is reached by the scroll
+      // progress; alpha pops slightly faster than size for texture
+      const grow = smooth(cell.threshold, cell.threshold + 0.04 + cell.delay, p);
+      if (grow <= 0) continue;
+      const size = cellPx * grow;
+      const alpha = smooth(cell.threshold, cell.threshold + 0.025, p);
+      ctx.globalAlpha = alpha * fade * cell.jitter;
       ctx.fillRect(cell.x + half - size / 2, cell.y + half - size / 2, size, size);
     }
     ctx.globalAlpha = 1;

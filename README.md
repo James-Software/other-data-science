@@ -17,6 +17,13 @@ shows a static hero + final text.
 Instagram [@aca.datasci.club](https://instagram.com/aca.datasci.club) is the
 only signup path; event date, location, and registration are TBD.
 
+The hero carries a subtle flickering square-grid canvas backdrop and a
+letter-by-letter headline roll-in; the California hologram uses the real
+state boundary (simplified from US Census map data). Scroll/grid animation
+concepts were inspired by <https://github.com/NayanVangala/rein>
+(clean-room vanilla JS implementations written for this site; no code
+copied).
+
 ## Develop
 
 ```bash
@@ -29,7 +36,9 @@ npm run preview  # preview the production build
 Project layout:
 
 - `index.html` — Vite entry at the repo root
-- `src/main.js` — entry module (imports CSS, starts the cinematic)
+- `src/main.js` — entry module (imports CSS, starts hero effects + cinematic)
+- `src/hero-grid.js` — flickering square-grid hero backdrop (canvas)
+- `src/hero-intro.js` — letter-by-letter headline roll-in
 - `src/cinematic.js` — scroll-progress → phase mapping + canvas squares
 - `src/cinematic.css` — pin/stage/layer styles + hologram keyframes
 - `src/style.css` — all styles
