@@ -591,16 +591,21 @@ h1 {
   width: min(880px, calc(100% - 48px));
   margin: 0 auto;
   padding: 24px 0 80px;
+  /* No static snap-align here: cinematic.js grants it dynamically only
+     once the pin has released (p = 1). A snap point during the dissolve
+     would fight the counter-transformed scroll (see below). */
+  scroll-snap-align: none;
 }
 
 /* Cross-dissolve from the cinematic finale (cinematic mode only): the
    tracks section is pulled up beneath the stage's final viewport and
-   faded in by scroll progress in cinematic.js. It is deliberately NOT a
-   scroll-snap point — a snap target here would fight the dissolve and
-   yank the scroll at the pin boundary. */
+   faded in by scroll progress in cinematic.js. While the dissolve plays,
+   a counter-transform there locks the tracks to the viewport so the page
+   holds perfectly still until the pin releases exactly at the tracks top. */
 .has-cinematic .tracks {
   margin-top: -100svh;
   opacity: 0;
+  will-change: transform, opacity;
 }
 
 .tracks h2 {

@@ -10,8 +10,9 @@
 //   p 0.51-0.65  text 1, hologram, and squares fade out back to white
 //   p 0.70-1.00  final text: in 0.70-0.78, hold 0.78-0.94, out 0.94-1.00
 //                 cross-dissolve into the Tracks section (pulled up beneath
-//                 the stage, faded in 0.90-1.00): at p = 1 the tracks fill
-//                 the viewport and the pin releases exactly at their top
+//                 the stage, faded in 0.90-1.00, counter-transform locked to
+//                 the viewport so the page holds still): at p = 1 the tracks
+//                 fill the viewport and the pin releases exactly at their top
 //
 // prefers-reduced-motion (or no JS): the cinematic never enables and the
 // page falls back to a static hero + final text in normal flow.
@@ -172,10 +173,25 @@ export function initCinematic() {
     // cross-dissolve into the tracks section: it sits pulled up beneath the
     // stage's final viewport (see .has-cinematic .tracks); fade it in as the
     // finale dissolves out, so at p = 1 the tracks fill the viewport and the
-    // pin releases with the tracks top exactly at the viewport top
+    // pin releases with the tracks top exactly at the viewport top.
+    //
+    // While the dissolve plays the visible page must hold perfectly still:
+    // cancel the scroll translation with a counter-transform so the tracks
+    // stay locked to the viewport and only opacities change. At p = 1 the
+    // lock is exactly 0, so the handoff is seamless.
     const dissolve = smooth(0.9, 1.0, p);
     tracks.style.opacity = dissolve.toFixed(3);
     tracks.style.visibility = dissolve <= 0.001 ? 'hidden' : 'visible';
+    const lock = p >= 0.9 ? -((1 - p) * pinRange) : 0;
+    tracks.style.transform = lock ? `translateY(${lock.toFixed(1)}px)` : '';
+
+    // Snap-point management: the tracks must NOT be a snap point while the
+    // dissolve plays — the browser factors the counter-transform into its
+    // snap-area math, which would pin scrollY mid-gesture and fight the
+    // scroll. Once the pin releases (p = 1) the snap point appears exactly
+    // at the rest position, so momentum overshoot settles back onto the
+    // tracks top instead of sailing past to the FAQ.
+    tracks.style.scrollSnapAlign = p >= 1 ? 'start' : 'none';
   }
 
   let ticking = false;
