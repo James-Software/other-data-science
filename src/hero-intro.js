@@ -6,7 +6,8 @@
 // is preserved on aria-label (words are aria-hidden) so screen readers
 // hear it once. Skipped entirely under prefers-reduced-motion.
 
-const STAGGER_MS = 70;
+const INITIAL_DELAY_MS = 300;
+const STAGGER_MS = 130;
 
 export function initHeroIntro() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -34,7 +35,7 @@ export function initHeroIntro() {
             w.className = 'w';
             w.setAttribute('aria-hidden', 'true');
             w.textContent = part;
-            w.style.animationDelay = `${i * STAGGER_MS}ms`;
+            w.style.animationDelay = `${INITIAL_DELAY_MS + i * STAGGER_MS}ms`;
             frag.appendChild(w);
             i++;
           }
