@@ -1,12 +1,15 @@
-// Dithered wave pixel backdrop for the hero.
+// Cascade pixel field for the hero.
 //
-// A live Bayer-dithered wave field: two slow traveling waves plus a
-// ripple ring that always emanates from the pointer, dithered into three
-// levels of one blue (#2E4BFF) over the white page.
+// Blue pixels spawn near the top of the hero and advect down and outward
+// like a slow cascade, rendered through an ordered Bayer dither in one
+// blue (#2E4BFF) over the white page. A density mask keeps the center
+// mostly white — the flow lives on the left and right sides — with a
+// whisper of pixels drifting through the middle so it never looks cut
+// out.
 //
-// Touching the field (pointer move / press) spawns extra decaying ripple
-// rings on top of the ambient waves. Resolution-independent: the canvas
-// runs at dither-cell resolution and is upscaled with
+// Touching the field (pointer move / press) spawns a few soft, quickly
+// decaying ripple rings on top of the flow. Resolution-independent: the
+// canvas runs at dither-cell resolution and is upscaled with
 // image-rendering: pixelated. The rAF loop runs only while the hero is
 // visible; one static frame under prefers-reduced-motion.
 
@@ -28,19 +31,26 @@ const BAYER = [
   63, 31, 55, 23, 61, 29, 53, 21,
 ];
 
-// Touch-ripple rings, evaluated in the same value domain as the waves.
-const R_AMP = 0.55; // peak value added at a wave crest
-const R_WAVELENGTH = 18; // cells (90px)
-const R_SPEED = 52; // cells/s outward (260px/s)
-const R_SPATIAL = 36; // cells, exponential decay length (180px)
-const R_TAU = 0.9; // s, exponential time constant
-const R_LIFE = 1.8; // s, retire ripples older than this
-const R_MAX = 6; // cap on concurrent ripples
-const R_CUT = 130; // cells, beyond this the contribution is ~0
-const SPAWN_GAP = 0.09; // s, min interval between pointermove spawns
-const SPAWN_DIST = 5; // cells, min distance from the previous spawn
+// Soft touch ripples, evaluated in the same value domain as the field.
+// Deliberately gentle: few concurrent rings, low amplitude, fast decay.
+const R_AMP = 0.26; // peak value added at a wave crest
+const R_WAVELENGTH = 22; // cells
+const R_SPEED = 40; // cells/s outward
+const R_SPATIAL = 24; // cells, exponential decay length
+const R_TAU = 0.55; // s, exponential time constant
+const R_LIFE = 1.3; // s, retire ripples older than this
+const R_MAX = 3; // cap on concurrent ripples
+const R_CUT = 90; // cells, beyond this the contribution is ~0
+const SPAWN_GAP = 0.4; // s, min interval between pointermove spawns
+const SPAWN_DIST = 12; // cells, min distance from the previous spawn
 
 const FRAME_MS = 40; // ~25fps is plenty for 5px cells
+const STEP = FRAME_MS / 1000;
+
+function smoothstep(a, b, x) {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+}
 
 export function initHeroGrid() {
   const layer = document.getElementById('layerHero');
@@ -58,9 +68,11 @@ export function initHeroGrid() {
   let cols = 0;
   let rows = 0;
   let n = 0;
+  let cx = 0; // horizontal center, in cells
   let img = null;
+  let acc = new Float32Array(0); // per-cell splatted pixel density
   let wave = new Float32Array(0); // per-frame touch-ripple accumulator
-  const pointer = { x: 0, y: 0, init: false }; // in cells
+  let parts = []; // cascade particles: {x, y, vy, seed, age} in cells
   const ripples = []; // {t0, ox, oy} in cells
   let lastSpawnT = -10;
   let lastSpawnX = 0;
@@ -70,21 +82,78 @@ export function initHeroGrid() {
   let lastFrame = 0;
   let inView = true;
 
+  // Density mask: ~0.05 at the horizontal center, ~1.0 at the sides.
+  // u is 0 at center, 1 at the left/right edges.
+  function sideMask(u) {
+    return 0.05 + 0.95 * smoothstep(0.12, 0.7, u);
+  }
+
+  function spawn(p) {
+    // Rejection-sample x so the sides stay dense and the center keeps
+    // only a whisper of pixels.
+    let x = Math.random() * cols;
+    for (let k = 0; k < 8; k++) {
+      const cand = Math.random() * cols;
+      const u = Math.abs(cand - cx) / (cols / 2);
+      if (Math.random() < sideMask(u)) {
+        x = cand;
+        break;
+      }
+      x = cand;
+    }
+    p.x = x;
+    p.y = -4 - Math.random() * rows * 0.12; // just above / at the top
+    p.vy = 13 + Math.random() * 9; // cells/s downward
+    p.seed = Math.random();
+    p.age = 0;
+  }
+
+  function buildField() {
+    const count = Math.max(600, Math.min(2800, Math.round((cols * rows) / 22)));
+    parts = [];
+    for (let i = 0; i < count; i++) {
+      const p = {};
+      spawn(p);
+      parts.push(p);
+    }
+  }
+
+  // Advance the cascade: mostly downward, with an outward horizontal
+  // component that grows away from the center, plus a touch of wobble.
+  function advance(dt, t) {
+    const half = cols / 2;
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i];
+      const u = Math.min(1.2, Math.abs(p.x - cx) / half);
+      const dir = p.x >= cx ? 1 : -1;
+      const vx =
+        dir * (3 + 13 * u) + 2.5 * Math.sin(t * 1.2 + p.seed * 6.283 + p.y * 0.045);
+      const vy = p.vy * (0.9 + 0.2 * Math.sin(p.seed * 6.283 + t * 0.8));
+      p.x += vx * dt;
+      p.y += vy * dt;
+      p.age += dt;
+      if (p.y > rows + 2 || p.x < -4 || p.x > cols + 4 || p.age > 16) {
+        spawn(p);
+      }
+    }
+  }
+
   function resize() {
     const w = layer.clientWidth;
     const h = layer.clientHeight;
     cols = Math.max(8, Math.ceil(w / CELL));
     rows = Math.max(8, Math.ceil(h / CELL));
+    cx = cols / 2;
     n = cols * rows;
     canvas.width = cols;
     canvas.height = rows;
     img = ctx.createImageData(cols, rows);
+    acc = new Float32Array(n);
     wave = new Float32Array(n);
-    if (!pointer.init) {
-      pointer.x = cols * 0.6;
-      pointer.y = rows * 0.4;
-      pointer.init = true;
-    }
+    ripples.length = 0;
+    buildField();
+    // Pre-roll so the first paint already shows the cascade mid-flow.
+    for (let k = 0; k < 70; k++) advance(STEP, k * STEP);
   }
 
   // The cinematic fades the hero layer out via inline opacity as the
@@ -97,7 +166,7 @@ export function initHeroGrid() {
     return rect.bottom > 0 && rect.top < window.innerHeight;
   }
 
-  function spawn(x, y, t) {
+  function spawnRipple(x, y, t) {
     if (ripples.length >= R_MAX) ripples.shift();
     ripples.push({ t0: t, ox: x, oy: y });
   }
@@ -111,55 +180,51 @@ export function initHeroGrid() {
   }
 
   function onMove(e) {
-    const p = layerCell(e);
-    pointer.x = p.x;
-    pointer.y = p.y;
     if (reduced || !inView || !heroActive()) return;
     const t = performance.now() / 1000 - t0;
     if (t - lastSpawnT < SPAWN_GAP) return;
+    const p = layerCell(e);
     const dx = p.x - lastSpawnX;
     const dy = p.y - lastSpawnY;
     if (dx * dx + dy * dy < SPAWN_DIST * SPAWN_DIST) return;
     lastSpawnT = t;
     lastSpawnX = p.x;
     lastSpawnY = p.y;
-    spawn(p.x, p.y, t);
+    spawnRipple(p.x, p.y, t);
     kick();
   }
 
   function onDown(e) {
-    const p = layerCell(e);
-    pointer.x = p.x;
-    pointer.y = p.y;
     if (reduced || !inView || !heroActive()) return;
     const t = performance.now() / 1000 - t0;
+    const p = layerCell(e);
     lastSpawnT = t;
     lastSpawnX = p.x;
     lastSpawnY = p.y;
-    spawn(p.x, p.y, t);
+    spawnRipple(p.x, p.y, t);
     kick();
-  }
-
-  // Ambient wave field: two slow traveling waves plus a ripple ring that
-  // always emanates from the pointer. x, y, and the pointer distance are
-  // in dither cells.
-  function baseValue(x, y, t) {
-    const dx = x - pointer.x;
-    const dy = y - pointer.y;
-    const d = Math.sqrt(dx * dx + dy * dy);
-    return (
-      0.46 +
-      0.22 * Math.sin(x * 0.05 + t * 0.9) * Math.cos(y * 0.07 - t * 0.6) +
-      0.18 * Math.sin((x * 0.6 + y) * 0.04 + t * 0.5) +
-      0.38 * Math.sin(d * 0.4 - t * 3.2) * Math.exp(-d * 0.035)
-    );
   }
 
   function draw(t) {
     const data = img.data;
-    wave.fill(0);
+    acc.fill(0);
+    // Splat particles into the cell grid with per-particle fade.
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i];
+      const ix = Math.floor(p.x);
+      const iy = Math.floor(p.y);
+      if (ix < 0 || iy < 0 || ix >= cols || iy >= rows) continue;
+      const fadeIn = smoothstep(0, 0.6, p.age);
+      const fadeOut = 1 - smoothstep(rows - 14, rows - 1, p.y);
+      const a = 0.85 * fadeIn * fadeOut;
+      if (a <= 0.01) continue;
+      const idx = iy * cols + ix;
+      const s = acc[idx] + a;
+      acc[idx] = s > 1.15 ? 1.15 : s;
+    }
     // Layer touch ripples into the accumulator (bounding-box walk so we
     // never iterate the whole grid per ripple).
+    wave.fill(0);
     const RK = (Math.PI * 2) / R_WAVELENGTH;
     const cut2 = R_CUT * R_CUT;
     for (let ri = ripples.length - 1; ri >= 0; ri--) {
@@ -200,15 +265,18 @@ export function initHeroGrid() {
     let p = 0;
     for (let y = 0; y < rows; y++) {
       const rowOff = y * cols;
+      const brow = (y & 7) * 8;
       for (let x = 0; x < cols; x++) {
-        const v = baseValue(x, y, t) + wave[rowOff + x];
-        const thr = (BAYER[(y & 7) * 8 + (x & 7)] + 0.5) / 64;
-        if (v > thr + 0.4) {
+        const v = acc[rowOff + x] + wave[rowOff + x];
+        const thr = (BAYER[brow + (x & 7)] + 0.5) / 64;
+        const t1 = thr * 0.55;
+        const t2 = t1 + 0.45;
+        if (v >= t2) {
           data[p] = BLUE_R;
           data[p + 1] = BLUE_G;
           data[p + 2] = BLUE_B;
           data[p + 3] = 255;
-        } else if (v > thr) {
+        } else if (v >= t1) {
           data[p] = BLUE_R;
           data[p + 1] = BLUE_G;
           data[p + 2] = BLUE_B;
@@ -232,7 +300,9 @@ export function initHeroGrid() {
     }
     if (now - lastFrame > FRAME_MS) {
       lastFrame = now;
-      draw(now / 1000 - t0);
+      const t = now / 1000 - t0;
+      advance(STEP, t);
+      draw(t);
     }
     raf = requestAnimationFrame(tick);
   }
