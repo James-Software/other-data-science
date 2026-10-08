@@ -102,7 +102,7 @@ a {
   overflow: hidden;
 }
 
-/* flickering square-grid backdrop (see hero-grid.js) */
+/* calm-water square-grid backdrop (see hero-grid.js) */
 .hero-grid {
   position: absolute;
   inset: 0;
