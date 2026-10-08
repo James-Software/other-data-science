@@ -72,6 +72,17 @@
   will-change: opacity, transform;
 }
 
+/* Decorative cinematic layers never intercept pointer input: the squares
+   canvas, text overlays, hologram, and final text sit above the hero in
+   paint order, so without this they swallow clicks meant for the hero
+   and header buttons. */
+.has-cinematic .layer-squares,
+.has-cinematic .layer-text1,
+.has-cinematic .layer-holo,
+.has-cinematic .layer-final {
+  pointer-events: none;
+}
+
 .has-cinematic .layer-hero {
   display: flex;
   flex-direction: column;
