@@ -112,8 +112,8 @@ a {
   overflow: hidden;
 }
 
-/* dithered wave-field backdrop (see hero-grid.js): the canvas renders at
-   dither-cell resolution and is upscaled, so keep cells crisp */
+/* smooth cascade particle backdrop (see hero-grid.js): full-resolution
+   canvas with soft anti-aliased dots — no pixelation */
 .hero-grid {
   position: absolute;
   inset: 0;
@@ -121,7 +121,6 @@ a {
   height: 100%;
   z-index: 0;
   pointer-events: none;
-  image-rendering: pixelated;
   transition: opacity 1.4s ease-out;
 }
 

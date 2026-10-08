@@ -1,59 +1,39 @@
-// Cascade pixel field for the hero.
+// Smooth cascade particle field for the hero.
 //
-// Blue pixels spawn near the top of the hero and advect down and outward
-// like a slow cascade, rendered through an ordered Bayer dither in one
-// blue (#2E4BFF) over the white page. A density mask keeps the center
-// mostly white — the flow lives on the left and right sides — with a
-// whisper of pixels drifting through the middle so it never looks cut
-// out. Small dense pixels (2.5px cells) keep the field fine-grained.
+// Soft blue particles drift down and outward from the top like a slow
+// cascade, rendered as smooth anti-aliased dots in one blue (#2E4BFF)
+// over the white page — no grid snapping, no dither steps, no flicker.
+// A density mask keeps the center mostly white; the flow lives on the
+// left and right sides, with a whisper drifting through the middle so
+// it never looks cut out. Small dense dots keep the field fine-grained.
 //
-// The cursor has real velocity-based physics: the pointer's velocity is
+// The cursor has velocity-based physics: the pointer's velocity is
 // tracked and smoothed, and particles near it receive (1) radial
-// repulsion scaled by cursor speed — a fast whip flings pixels, a slow
-// hover parts them gently, a still cursor keeps a soft minimum parting —
-// and (2) a directional shove along the cursor's velocity vector with
-// quadratic drag — fast swipes fling pixels in the swipe direction like
-// a hand through water, while a slow hover barely stirs them.
-// Semi-implicit Euler integration at frame dt, strong damping so
-// displaced pixels settle and rejoin the cascade flow — no permanent
-// displacement, no runaway.
-// Resolution-independent: the canvas runs at dither-cell resolution and
-// is upscaled with image-rendering: pixelated. The rAF loop runs only
-// while the hero is visible; one static frame under prefers-reduced-motion.
+// repulsion scaled by cursor speed — a fast whip flings particles, a
+// slow hover parts them gently, a still cursor keeps a soft minimum
+// parting — and (2) a directional shove along the cursor's velocity
+// vector with quadratic drag. Semi-implicit Euler integration at frame
+// dt, strong damping so displaced particles settle and rejoin the
+// cascade flow — no permanent displacement, no runaway.
+// Full-resolution DPR-aware canvas; the rAF loop runs only while the
+// hero is visible; one static frame under prefers-reduced-motion.
 
-const CELL = 2.5; // dither cell size, CSS px — small, dense pixels
-const BLUE_R = 46;
-const BLUE_G = 75;
-const BLUE_B = 255; // #2E4BFF — the only hue ever drawn
-const MID_ALPHA = 115; // mid dither level opacity (~45%), same hue
+const BLUE = '46,75,255'; // #2E4BFF — the only hue ever drawn
 
-// Standard 8x8 Bayer ordered-dither threshold matrix.
-const BAYER = [
-   0, 32,  8, 40,  2, 34, 10, 42,
-  48, 16, 56, 24, 50, 18, 58, 26,
-  12, 44,  4, 36, 14, 46,  6, 38,
-  60, 28, 52, 20, 62, 30, 54, 22,
-   3, 35, 11, 43,  1, 33,  9, 41,
-  51, 19, 59, 27, 49, 17, 57, 25,
-  15, 47,  7, 39, 13, 45,  5, 37,
-  63, 31, 55, 23, 61, 29, 53, 21,
-];
-
-// Velocity-based cursor physics (units: cells, seconds).
-const FORCE_R = 80;    // cells, radius of influence around the pointer (~200px)
-const RAD_BASE = 80;   // cells/s^2, radial push with a still cursor
-const RAD_GAIN = 0.22; // extra radial push per (cell/s) of cursor speed
-const SHOVE = 0.012;   // quadratic drag: shove per (cell/s)^2 of cursor speed —
-                       // a whip flings pixels, a slow hover barely stirs them
-const DAMP = 4.5;      // 1/s, velocity damping — pixels settle back to the flow
-const VMAX = 260;      // cells/s, particle speed clamp
-const CUR_VMAX = 1800; // cells/s, cursor velocity clamp (kills noise spikes)
+// Velocity-based cursor physics (units: CSS px, seconds).
+const FORCE_R = 200;   // px, radius of influence around the pointer
+const RAD_BASE = 200;  // px/s^2, radial push with a still cursor
+const RAD_GAIN = 0.22; // extra radial push per (px/s) of cursor speed
+const SHOVE = 0.0048;  // quadratic drag: shove per (px/s)^2 of cursor speed —
+                       // a whip flings particles, a slow hover barely stirs them
+const DAMP = 4.5;      // 1/s, velocity damping — particles settle back to the flow
+const VMAX = 650;      // px/s, particle speed clamp
+const CUR_VMAX = 4500; // px/s, cursor velocity clamp (kills noise spikes)
 const CUR_SMOOTH = 0.35; // per-event smoothing of the cursor velocity estimate
 const CUR_DECAY = 10;  // 1/s, decay of the estimate over gaps between events
 const CUR_STALE = 0.12; // s without a move event before the cursor reads as still
 
-const FRAME_MS = 40; // ~25fps is plenty for small cells
-const STEP = FRAME_MS / 1000;
+const DT_MAX = 0.05; // s, clamp frame dt — frame-rate independent, spike-safe
 
 function smoothstep(a, b, x) {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -72,19 +52,29 @@ export function initHeroGrid() {
   layer.prepend(canvas);
   const ctx = canvas.getContext('2d');
 
+  // Pre-rendered soft dot sprite: radial falloff, no hard edges.
+  const SPR = 48;
+  const sprite = document.createElement('canvas');
+  sprite.width = SPR;
+  sprite.height = SPR;
+  const sctx = sprite.getContext('2d');
+  const grad = sctx.createRadialGradient(SPR / 2, SPR / 2, 0, SPR / 2, SPR / 2, SPR / 2);
+  grad.addColorStop(0, `rgba(${BLUE},1)`);
+  grad.addColorStop(0.55, `rgba(${BLUE},0.55)`);
+  grad.addColorStop(1, `rgba(${BLUE},0)`);
+  sctx.fillStyle = grad;
+  sctx.fillRect(0, 0, SPR, SPR);
+
   const t0 = performance.now() / 1000;
-  let cols = 0;
-  let rows = 0;
-  let n = 0;
-  let cx = 0; // horizontal center, in cells
-  let img = null;
-  let acc = new Float32Array(0); // per-cell splatted pixel density
-  let parts = []; // cascade particles: {x, y, vy, seed, age, pvx, pvy} in cells
-  let ptx = 0; // pointer position, in cells
+  let w = 0;
+  let h = 0;
+  let cx = 0; // horizontal center, in px
+  let parts = []; // cascade particles: {x, y, vy, seed, age, r, a, pvx, pvy}
+  let ptx = 0; // pointer position, in px
   let pty = 0;
-  let cvx = 0; // smoothed cursor velocity, in cells/s
+  let cvx = 0; // smoothed cursor velocity, in px/s
   let cvy = 0;
-  let lastPx = 0; // last pointer sample, in cells
+  let lastPx = 0; // last pointer sample, in px
   let lastPy = 0;
   let lastPt = -1; // time of last pointer sample, in seconds
   let pointerActive = false; // pointer currently over the hero
@@ -101,11 +91,11 @@ export function initHeroGrid() {
 
   function spawn(p) {
     // Rejection-sample x so the sides stay dense and the center keeps
-    // only a whisper of pixels.
-    let x = Math.random() * cols;
+    // only a whisper of particles.
+    let x = Math.random() * w;
     for (let k = 0; k < 8; k++) {
-      const cand = Math.random() * cols;
-      const u = Math.abs(cand - cx) / (cols / 2);
+      const cand = Math.random() * w;
+      const u = Math.abs(cand - cx) / (w / 2);
       if (Math.random() < sideMask(u)) {
         x = cand;
         break;
@@ -113,16 +103,18 @@ export function initHeroGrid() {
       x = cand;
     }
     p.x = x;
-    p.y = -8 - Math.random() * rows * 0.12; // just above / at the top
-    p.vy = 26 + Math.random() * 18; // cells/s downward
+    p.y = -20 - Math.random() * h * 0.12; // just above / at the top
+    p.vy = 65 + Math.random() * 45; // px/s downward
     p.seed = Math.random();
     p.age = 0;
+    p.r = 1.0 + Math.random() * 1.0; // dot radius, CSS px — small and dense
+    p.a = 0.5 + Math.random() * 0.35; // base opacity — smooth, never stepped
     p.pvx = 0; // cursor-physics velocity — damps back to 0, rejoins the flow
     p.pvy = 0;
   }
 
   function buildField() {
-    const count = Math.max(1200, Math.min(5600, Math.round((cols * rows) / 44)));
+    const count = Math.max(1400, Math.min(5600, Math.round((w * h) / 300)));
     parts = [];
     for (let i = 0; i < count; i++) {
       const p = {};
@@ -132,20 +124,21 @@ export function initHeroGrid() {
   }
 
   // Advance the cascade: mostly downward, with an outward horizontal
-  // component that grows away from the center, plus a touch of wobble.
+  // component that grows away from the center, plus a gentle wobble.
+  // Positions are continuous floats — nothing snaps to a grid.
   function advance(dt, t) {
-    const half = cols / 2;
+    const half = w / 2;
     for (let i = 0; i < parts.length; i++) {
       const p = parts[i];
       const u = Math.min(1.2, Math.abs(p.x - cx) / half);
       const dir = p.x >= cx ? 1 : -1;
       const vx =
-        dir * (6 + 26 * u) + 5 * Math.sin(t * 1.2 + p.seed * 6.283 + p.y * 0.0225);
+        dir * (15 + 65 * u) + 12.5 * Math.sin(t * 1.2 + p.seed * 6.283 + p.y * 0.009);
       const vy = p.vy * (0.9 + 0.2 * Math.sin(p.seed * 6.283 + t * 0.8));
       p.x += vx * dt;
       p.y += vy * dt;
       p.age += dt;
-      if (p.y > rows + 4 || p.x < -8 || p.x > cols + 8 || p.age > 16) {
+      if (p.y > h + 10 || p.x < -20 || p.x > w + 20 || p.age > 16) {
         spawn(p);
       }
     }
@@ -176,16 +169,16 @@ export function initHeroGrid() {
         if (d2 < R2) {
           let nx;
           let ny;
-          let w;
+          let wgt;
           if (d2 > 1e-6) {
             const d = Math.sqrt(d2);
             const f = 1 - d / FORCE_R;
-            w = f * f; // smooth quadratic falloff — no pop at the edge
+            wgt = f * f; // smooth quadratic falloff — no pop at the edge
             nx = dx / d;
             ny = dy / d;
           } else {
             // Dead-center on the pointer: shove along the cursor's motion.
-            w = 1;
+            wgt = 1;
             if (cspeed > 1) {
               nx = cvx / cspeed;
               ny = cvy / cspeed;
@@ -194,8 +187,8 @@ export function initHeroGrid() {
               ny = 0;
             }
           }
-          p.pvx += (nx * fRad * w + cvx * cspeed * SHOVE * w) * dt;
-          p.pvy += (ny * fRad * w + cvy * cspeed * SHOVE * w) * dt;
+          p.pvx += (nx * fRad * wgt + cvx * cspeed * SHOVE * wgt) * dt;
+          p.pvy += (ny * fRad * wgt + cvy * cspeed * SHOVE * wgt) * dt;
         }
       }
       p.pvx *= damp;
@@ -212,19 +205,16 @@ export function initHeroGrid() {
   }
 
   function resize() {
-    const w = layer.clientWidth;
-    const h = layer.clientHeight;
-    cols = Math.max(8, Math.ceil(w / CELL));
-    rows = Math.max(8, Math.ceil(h / CELL));
-    cx = cols / 2;
-    n = cols * rows;
-    canvas.width = cols;
-    canvas.height = rows;
-    img = ctx.createImageData(cols, rows);
-    acc = new Float32Array(n);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = layer.clientWidth;
+    h = layer.clientHeight;
+    cx = w / 2;
+    canvas.width = Math.max(1, Math.round(w * dpr));
+    canvas.height = Math.max(1, Math.round(h * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     buildField();
     // Pre-roll so the first paint already shows the cascade mid-flow.
-    for (let k = 0; k < 70; k++) advance(STEP, k * STEP);
+    for (let k = 0; k < 70; k++) advance(1 / 60, k / 60);
   }
 
   // The cinematic fades the hero layer out via inline opacity as the
@@ -237,11 +227,11 @@ export function initHeroGrid() {
     return rect.bottom > 0 && rect.top < window.innerHeight;
   }
 
-  function layerCell(e) {
+  function layerPos(e) {
     const rect = layer.getBoundingClientRect();
     return {
-      x: (e.clientX - rect.left) / CELL,
-      y: (e.clientY - rect.top) / CELL,
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
     };
   }
 
@@ -277,13 +267,13 @@ export function initHeroGrid() {
 
   function onMove(e) {
     if (reduced || !inView || !heroActive()) return;
-    trackPointer(layerCell(e));
+    trackPointer(layerPos(e));
     kick();
   }
 
   function onDown(e) {
     if (reduced || !inView || !heroActive()) return;
-    trackPointer(layerCell(e));
+    trackPointer(layerPos(e));
     kick();
   }
 
@@ -293,50 +283,20 @@ export function initHeroGrid() {
   }
 
   function draw() {
-    const data = img.data;
-    acc.fill(0);
-    // Splat particles into the cell grid with per-particle fade.
+    ctx.clearRect(0, 0, w, h);
     for (let i = 0; i < parts.length; i++) {
       const p = parts[i];
-      const ix = Math.floor(p.x);
-      const iy = Math.floor(p.y);
-      if (ix < 0 || iy < 0 || ix >= cols || iy >= rows) continue;
+      if (p.x < -8 || p.y < -8 || p.x > w + 8 || p.y > h + 8) continue;
+      // Continuous opacity: smooth fade in at the top, out at the bottom.
       const fadeIn = smoothstep(0, 0.6, p.age);
-      const fadeOut = 1 - smoothstep(rows - 28, rows - 2, p.y);
-      const a = 0.85 * fadeIn * fadeOut;
-      if (a <= 0.01) continue;
-      const idx = iy * cols + ix;
-      const s = acc[idx] + a;
-      acc[idx] = s > 1.15 ? 1.15 : s;
+      const fadeOut = 1 - smoothstep(h - 70, h - 5, p.y);
+      const a = p.a * fadeIn * fadeOut;
+      if (a < 0.01) continue;
+      const s = p.r * 2.4; // sprite draw size — soft falloff, no hard edge
+      ctx.globalAlpha = a;
+      ctx.drawImage(sprite, p.x - s / 2, p.y - s / 2, s, s);
     }
-    // Dither the field into three levels of the one blue: transparent
-    // (page white shows through), mid blue, full blue.
-    let p = 0;
-    for (let y = 0; y < rows; y++) {
-      const rowOff = y * cols;
-      const brow = (y & 7) * 8;
-      for (let x = 0; x < cols; x++) {
-        const v = acc[rowOff + x];
-        const thr = (BAYER[brow + (x & 7)] + 0.5) / 64;
-        const t1 = thr * 0.55;
-        const t2 = t1 + 0.45;
-        if (v >= t2) {
-          data[p] = BLUE_R;
-          data[p + 1] = BLUE_G;
-          data[p + 2] = BLUE_B;
-          data[p + 3] = 255;
-        } else if (v >= t1) {
-          data[p] = BLUE_R;
-          data[p + 1] = BLUE_G;
-          data[p + 2] = BLUE_B;
-          data[p + 3] = MID_ALPHA;
-        } else {
-          data[p + 3] = 0;
-        }
-        p += 4;
-      }
-    }
-    ctx.putImageData(img, 0, 0);
+    ctx.globalAlpha = 1;
   }
 
   function tick(now) {
@@ -347,15 +307,14 @@ export function initHeroGrid() {
       slowTimer = window.setTimeout(slowPoll, 500);
       return;
     }
-    if (now - lastFrame > FRAME_MS) {
-      // Real frame dt, clamped: frame-rate independent, spike-safe.
-      const dt = Math.min(0.05, Math.max(0.001, (now - lastFrame) / 1000));
-      lastFrame = now;
-      const t = now / 1000 - t0;
-      advance(dt, t);
-      physics(dt, now / 1000);
-      draw();
-    }
+    // Real frame dt, clamped: frame-rate independent, spike-safe.
+    // Every rAF advances — no fixed timestep stepping, motion stays fluid.
+    const dt = Math.min(DT_MAX, Math.max(0.001, (now - lastFrame) / 1000));
+    lastFrame = now;
+    const t = now / 1000 - t0;
+    advance(dt, t);
+    physics(dt, now / 1000);
+    draw();
     raf = requestAnimationFrame(tick);
   }
 
@@ -363,7 +322,10 @@ export function initHeroGrid() {
     slowTimer = 0;
     if (!inView) return;
     if (heroActive()) {
-      if (!raf) raf = requestAnimationFrame(tick);
+      if (!raf) {
+        lastFrame = performance.now();
+        raf = requestAnimationFrame(tick);
+      }
     } else {
       slowTimer = window.setTimeout(slowPoll, 500);
     }
@@ -372,6 +334,7 @@ export function initHeroGrid() {
   function kick() {
     if (reduced || raf || slowTimer || !inView) return;
     if (heroActive()) {
+      lastFrame = performance.now();
       raf = requestAnimationFrame(tick);
     } else {
       slowTimer = window.setTimeout(slowPoll, 500);
@@ -430,5 +393,8 @@ export function initHeroGrid() {
   requestAnimationFrame(() => {
     canvas.style.opacity = '1';
   });
-  if (inView) raf = requestAnimationFrame(tick);
+  if (inView) {
+    lastFrame = performance.now();
+    raf = requestAnimationFrame(tick);
+  }
 }
