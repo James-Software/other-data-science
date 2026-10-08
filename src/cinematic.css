@@ -237,10 +237,7 @@
   left: var(--x);
   top: var(--y);
   width: var(--s);
-  /* re-enable pointer input for the spin interaction; the wrapper stays
-     click-transparent and logos sit near the edges, clear of buttons */
-  pointer-events: auto;
-  cursor: pointer;
+  pointer-events: none;
   animation: logo-float var(--d, 6s) ease-in-out infinite;
   animation-delay: var(--dl, 0s);
 }
@@ -253,10 +250,6 @@
   user-select: none;
 }
 
-.float-logo.spin img {
-  animation: logo-spin 0.7s cubic-bezier(0.2, 0.7, 0.3, 1);
-}
-
 @keyframes logo-float {
   0%,
   100% {
@@ -264,12 +257,6 @@
   }
   50% {
     transform: translateY(9px);
-  }
-}
-
-@keyframes logo-spin {
-  to {
-    transform: rotate(360deg);
   }
 }
 
@@ -295,12 +282,8 @@
     height: min(48vh, 48svh, 420px);
   }
 
-  /* fewer, smaller floating logos on narrow screens */
+  /* smaller floating logos on narrow screens */
   .float-logo {
     width: calc(var(--s) * 0.62);
-  }
-  .float-logo:nth-child(5),
-  .float-logo:nth-child(6) {
-    display: none;
   }
 }

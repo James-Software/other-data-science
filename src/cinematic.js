@@ -28,25 +28,6 @@ const smooth = (a, b, x) => {
   return t * t * (3 - 2 * t);
 };
 
-// Floating school logos: hover or tap spins a logo 360deg.
-// Re-triggerable: the class is removed on animationend and forced to
-// restart via reflow. Skipped entirely under prefers-reduced-motion.
-export function initLogoSpin() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  document.querySelectorAll('.float-logo').forEach((el) => {
-    const img = el.querySelector('img');
-    if (!img) return;
-    const spin = () => {
-      el.classList.remove('spin');
-      void el.offsetWidth; // restart the animation even mid-spin
-      el.classList.add('spin');
-    };
-    el.addEventListener('pointerenter', spin);
-    el.addEventListener('pointerdown', spin);
-    img.addEventListener('animationend', () => el.classList.remove('spin'));
-  });
-}
-
 export function initCinematic() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 

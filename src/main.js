@@ -6,9 +6,8 @@
 import './style.css';
 import { initHeroGrid } from './hero-grid.js';
 import { initHeroIntro } from './hero-intro.js';
-import { initCinematic, initLogoSpin } from './cinematic.js';
+import { initCinematic } from './cinematic.js';
 
 initHeroGrid();
 initHeroIntro();
 initCinematic();
-initLogoSpin();
