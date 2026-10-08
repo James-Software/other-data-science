@@ -23,12 +23,9 @@ update `TARGET_ISO` in `src/countdown.js` (keep the UTC offset in sync
 with the timezone for the chosen date) and the `<time datetime="…">`
 element in `index.html`.
 
-The hero carries a subtle flickering square-grid canvas backdrop and a
-letter-by-letter headline roll-in; the California hologram uses the real
-state boundary (simplified from US Census map data). Scroll/grid animation
-concepts were inspired by <https://github.com/NayanVangala/rein>
-(clean-room vanilla JS implementations written for this site; no code
-copied).
+The hero carries a live Bayer-dithered wave-field canvas backdrop in one
+blue and a letter-by-letter headline roll-in; the California hologram uses
+the real state boundary (simplified from US Census map data).
 
 ## Develop
 
@@ -43,7 +40,8 @@ Project layout:
 
 - `index.html` — Vite entry at the repo root
 - `src/main.js` — entry module (imports CSS, starts hero effects + cinematic)
-- `src/hero-grid.js` — flickering square-grid hero backdrop (canvas)
+- `src/hero-grid.js` — dithered wave-field hero backdrop (canvas)
+- `src/faq.js` — animated FAQ expand/collapse
 - `src/hero-intro.js` — letter-by-letter headline roll-in
 - `src/cinematic.js` — scroll-progress → phase mapping + canvas squares
 - `src/cinematic.css` — pin/stage/layer styles + hologram keyframes
