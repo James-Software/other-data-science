@@ -220,12 +220,66 @@
   }
 }
 
+/* ---------- floating school logos around the final text ---------- */
+
+.layer-final {
+  position: relative;
+}
+
+.float-logos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.float-logo {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  /* re-enable pointer input for the spin interaction; the wrapper stays
+     click-transparent and logos sit near the edges, clear of buttons */
+  pointer-events: auto;
+  cursor: pointer;
+  animation: logo-float var(--d, 6s) ease-in-out infinite;
+  animation-delay: var(--dl, 0s);
+}
+
+.float-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.float-logo.spin img {
+  animation: logo-spin 0.7s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@keyframes logo-float {
+  0%,
+  100% {
+    transform: translateY(-9px);
+  }
+  50% {
+    transform: translateY(9px);
+  }
+}
+
+@keyframes logo-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ---------- reduced motion: keep the static baseline ---------- */
 
 @media (prefers-reduced-motion: reduce) {
   .holo-tilt,
   .ca-outline,
-  .scan-beam {
+  .scan-beam,
+  .float-logo {
     animation: none;
   }
 }
@@ -239,5 +293,14 @@
 
   .holo-svg {
     height: min(48vh, 48svh, 420px);
+  }
+
+  /* fewer, smaller floating logos on narrow screens */
+  .float-logo {
+    width: calc(var(--s) * 0.62);
+  }
+  .float-logo:nth-child(5),
+  .float-logo:nth-child(6) {
+    display: none;
   }
 }
