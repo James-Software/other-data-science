@@ -147,29 +147,27 @@ h1 {
   color: var(--blue);
 }
 
-/* letter-by-letter headline roll-in (see hero-intro.js) */
-.hero h1 .ch {
+/* blur-and-rise headline entrance (see hero-intro.js) */
+.hero h1 .w {
   display: inline-block;
-  white-space: pre;
-  opacity: 0;
-  animation: ch-roll 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  white-space: nowrap;
 }
 
-@keyframes ch-roll {
+.hero h1.rise .w {
+  will-change: filter, transform, opacity;
+  animation: w-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes w-rise {
   from {
     opacity: 0;
-    transform: translateY(0.45em) rotate(6deg);
+    filter: blur(14px);
+    transform: translateY(0.35em);
   }
   to {
     opacity: 1;
-    transform: translateY(0) rotate(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero h1 .ch {
-    animation: none;
-    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
   }
 }
 
