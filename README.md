@@ -17,6 +17,12 @@ shows a static hero + final text.
 Instagram [@aca.datasci.club](https://instagram.com/aca.datasci.club) is the
 only signup path; event date, location, and registration are TBD.
 
+**Countdown date is a placeholder.** The hero countdown targets
+`2026-10-30T00:00:00-07:00` (America/Los_Angeles) "for now". To change it,
+update `TARGET_ISO` in `src/countdown.js` (keep the UTC offset in sync
+with the timezone for the chosen date) and the `<time datetime="…">`
+element in `index.html`.
+
 The hero carries a subtle flickering square-grid canvas backdrop and a
 letter-by-letter headline roll-in; the California hologram uses the real
 state boundary (simplified from US Census map data). Scroll/grid animation

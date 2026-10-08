@@ -190,6 +190,83 @@ h1 {
   color: var(--muted);
 }
 
+/* ---- countdown ---- */
+
+.countdown {
+  margin-top: 56px;
+}
+
+.cd-units {
+  display: flex;
+  justify-content: center;
+  gap: 44px;
+}
+
+.cd-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.cd-digits {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  font-size: clamp(1.6rem, 4vw, 2.25rem);
+  font-weight: 600;
+  color: #111;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.cd-cur,
+.cd-next {
+  display: inline-block;
+  transition:
+    opacity 0.3s ease-out,
+    filter 0.3s ease-out,
+    transform 0.3s ease-out;
+}
+
+.cd-next {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(45%);
+}
+
+.cd-digits.morph .cd-cur {
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(-45%);
+}
+
+.cd-digits.morph .cd-next {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
+}
+
+.cd-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@media (max-width: 560px) {
+  .countdown {
+    margin-top: 44px;
+  }
+
+  .cd-units {
+    gap: 28px;
+  }
+}
+
 /* ---- buttons ---- */
 
 .button {

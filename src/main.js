@@ -6,8 +6,10 @@
 import './style.css';
 import { initHeroGrid } from './hero-grid.js';
 import { initHeroIntro } from './hero-intro.js';
+import { initCountdown } from './countdown.js';
 import { initCinematic } from './cinematic.js';
 
 initHeroGrid();
 initHeroIntro();
+initCountdown();
 initCinematic();
