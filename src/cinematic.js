@@ -9,9 +9,9 @@
 //   p 0.35-0.50  3D California hologram (CSS idle animation, scroll-driven opacity)
 //   p 0.51-0.65  text 1, hologram, and squares fade out back to white
 //   p 0.70-1.00  final text: in 0.70-0.78, hold 0.78-0.94, out 0.94-1.00
-//                 (floating logos fade out with the final-text layer;
-//                  the dissolve runs right up to the pin release so the
-//                  next section arrives immediately underneath)
+//                 cross-dissolve into the Tracks section (pulled up beneath
+//                 the stage, faded in 0.90-1.00): at p = 1 the tracks fill
+//                 the viewport and the pin releases exactly at their top
 //
 // prefers-reduced-motion (or no JS): the cinematic never enables and the
 // page falls back to a static hero + final text in normal flow.
@@ -41,7 +41,8 @@ export function initCinematic() {
   const text1 = document.getElementById('layerText1');
   const holo = document.getElementById('layerHolo');
   const final = document.getElementById('layerFinal');
-  if (!pin || !stage || !canvas || !hero || !text1 || !holo || !final) return;
+  const tracks = document.querySelector('.tracks');
+  if (!pin || !stage || !canvas || !hero || !text1 || !holo || !final || !tracks) return;
 
   document.documentElement.classList.add('has-cinematic');
 
@@ -167,6 +168,14 @@ export function initCinematic() {
     const fIn = smooth(0.70, 0.78, p);
     const fOut = smooth(0.94, 1.0, p);
     setLayer(final, fIn * (1 - fOut), `translateY(${(28 * (1 - fIn)).toFixed(1)}px)`);
+
+    // cross-dissolve into the tracks section: it sits pulled up beneath the
+    // stage's final viewport (see .has-cinematic .tracks); fade it in as the
+    // finale dissolves out, so at p = 1 the tracks fill the viewport and the
+    // pin releases with the tracks top exactly at the viewport top
+    const dissolve = smooth(0.9, 1.0, p);
+    tracks.style.opacity = dissolve.toFixed(3);
+    tracks.style.visibility = dissolve <= 0.001 ? 'hidden' : 'visible';
   }
 
   let ticking = false;

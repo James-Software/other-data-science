@@ -591,7 +591,16 @@ h1 {
   width: min(880px, calc(100% - 48px));
   margin: 0 auto;
   padding: 24px 0 80px;
-  scroll-snap-align: start;
+}
+
+/* Cross-dissolve from the cinematic finale (cinematic mode only): the
+   tracks section is pulled up beneath the stage's final viewport and
+   faded in by scroll progress in cinematic.js. It is deliberately NOT a
+   scroll-snap point — a snap target here would fight the dissolve and
+   yank the scroll at the pin boundary. */
+.has-cinematic .tracks {
+  margin-top: -100svh;
+  opacity: 0;
 }
 
 .tracks h2 {
