@@ -4,11 +4,11 @@
 // maps deterministically to phases — no time-based motion in the phase
 // logic; a rAF-throttled passive scroll listener re-renders on scroll only.
 //
-//   p 0.00-0.30  blue squares pixel-dissolve in until the stage is covered
-//   p 0.30-0.45  white text: "The Bay Area has always been the center of technology."
-//   p 0.45-0.65  3D California hologram (CSS idle animation, scroll-driven opacity)
-//   p 0.65-0.80  text 1, hologram, and squares fade out back to white
-//   p 0.80-1.00  final text, black on white with blue accent words
+//   p 0.00-0.24  blue squares pixel-dissolve in until the stage is covered
+//   p 0.25-0.35  white text: "The Bay Area has always been the center of technology."
+//   p 0.35-0.50  3D California hologram (CSS idle animation, scroll-driven opacity)
+//   p 0.51-0.65  text 1, hologram, and squares fade out back to white
+//   p 0.67-1.00  final text, black on white with blue accent words
 //
 // prefers-reduced-motion (or no JS): the cinematic never enables and the
 // page falls back to a static hero + final text in normal flow.
@@ -84,12 +84,12 @@ export function initCinematic() {
     }
     const n = cells.length;
     cells.forEach((cell, i) => {
-      // Spread dissolve thresholds across phase A (0.02 -> 0.22). Each cell
+      // Spread dissolve thresholds across phase A (0.02 -> 0.18). Each cell
       // grows from its center with a small randomized delay, giving a
       // pixel-dissolve feel as scroll progress increases. Full coverage
-      // lands by p = 0.30, right as the Bay Area text arrives.
-      cell.threshold = 0.02 + (i / Math.max(1, n - 1)) * 0.2;
-      cell.delay = rand() * 0.04;
+      // lands by p = 0.24, right as the Bay Area text arrives.
+      cell.threshold = 0.02 + (i / Math.max(1, n - 1)) * 0.16;
+      cell.delay = rand() * 0.03;
       cell.jitter = 0.85 + rand() * 0.15;
       cell.ci = Math.floor(rand() * BLUE_PALETTE.length);
     });
@@ -106,7 +106,7 @@ export function initCinematic() {
     const w = stage.clientWidth;
     const h = stage.clientHeight;
     ctx.clearRect(0, 0, w, h);
-    const fade = 1 - smooth(0.68, 0.8, p); // phase D: squares dissolve
+    const fade = 1 - smooth(0.53, 0.65, p); // phase D: squares dissolve
     if (fade <= 0 || p <= 0) return;
     const half = cellPx / 2;
     for (let i = 0; i < cells.length; i++) {
@@ -114,10 +114,10 @@ export function initCinematic() {
       // pixel-dissolve: each cell grows from its center once its
       // (threshold + randomized delay) window is reached by the scroll
       // progress; alpha pops slightly faster than size for texture
-      const grow = smooth(cell.threshold, cell.threshold + 0.04 + cell.delay, p);
+      const grow = smooth(cell.threshold, cell.threshold + 0.03 + cell.delay, p);
       if (grow <= 0) continue;
       const size = cellPx * grow;
-      const alpha = smooth(cell.threshold, cell.threshold + 0.025, p);
+      const alpha = smooth(cell.threshold, cell.threshold + 0.02, p);
       ctx.fillStyle = BLUE_PALETTE[cell.ci];
       ctx.globalAlpha = alpha * fade * cell.jitter;
       ctx.fillRect(cell.x + half - size / 2, cell.y + half - size / 2, size, size);
@@ -141,27 +141,27 @@ export function initCinematic() {
 
     drawSquares(p);
 
-    // text 1: in 0.30-0.38, drifts up as the hologram arrives, out 0.66-0.74
-    const t1in = smooth(0.3, 0.38, p);
-    const t1out = smooth(0.66, 0.74, p);
-    const t1rise = smooth(0.45, 0.55, p);
+    // text 1: in 0.25-0.33, drifts up as the hologram arrives, out 0.51-0.59
+    const t1in = smooth(0.25, 0.33, p);
+    const t1out = smooth(0.51, 0.59, p);
+    const t1rise = smooth(0.35, 0.45, p);
     setLayer(
       text1,
       t1in * (1 - t1out),
       `translateY(${(24 * (1 - t1in) - vh * 0.24 * t1rise).toFixed(1)}px)`,
     );
 
-    // hologram: in 0.45-0.53, nudged below center, out 0.66-0.74
-    const hIn = smooth(0.45, 0.53, p);
-    const hOut = smooth(0.66, 0.74, p);
+    // hologram: in 0.35-0.43, nudged below center, out 0.51-0.59
+    const hIn = smooth(0.35, 0.43, p);
+    const hOut = smooth(0.51, 0.59, p);
     setLayer(
       holo,
       hIn * (1 - hOut),
       `translateY(${(vh * 0.05 * hIn).toFixed(1)}px) scale(${(0.9 + 0.1 * hIn).toFixed(3)})`,
     );
 
-    // final text: in 0.82-0.90, holds to the end of the pin
-    const fIn = smooth(0.82, 0.9, p);
+    // final text: in 0.67-0.75, holds to the end of the pin
+    const fIn = smooth(0.67, 0.75, p);
     setLayer(final, fIn, `translateY(${(28 * (1 - fIn)).toFixed(1)}px)`);
   }
 
