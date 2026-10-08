@@ -18,6 +18,10 @@
 
 html {
   background: var(--bg);
+  /* Gentle snap between page sections. `proximity` (never `mandatory`)
+     so the pinned scroll cinematic is never hijacked: the pin wrapper
+     and sticky stage deliberately have no snap alignment. */
+  scroll-snap-type: y proximity;
 }
 
 body {
@@ -212,6 +216,12 @@ h1 {
 }
 
 /* ---- faq: one quiet centered column ---- */
+
+.faq,
+.sponsors,
+.site-footer {
+  scroll-snap-align: start;
+}
 
 .faq {
   width: min(640px, calc(100% - 48px));
