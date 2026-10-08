@@ -16,10 +16,10 @@
 
 import './cinematic.css';
 
-// Vibrant electric blues for the decorative scroll-fill squares
+// One uniform vibrant blue for every decorative scroll-fill square
 // (brand elements elsewhere — buttons, headline accent, links — stay
 // in vibrant brand blue #0d45d2).
-const BLUE_PALETTE = ['#2E4BFF', '#1F3CFF', '#4D6BFF'];
+const BLUE = '#2E4BFF';
 
 const clamp01 = (x) => Math.min(1, Math.max(0, x));
 
@@ -92,7 +92,6 @@ export function initCinematic() {
       cell.threshold = 0.02 + (i / Math.max(1, n - 1)) * 0.16;
       cell.delay = rand() * 0.03;
       cell.jitter = 0.85 + rand() * 0.15;
-      cell.ci = Math.floor(rand() * BLUE_PALETTE.length);
     });
 
     pinTop = pin.getBoundingClientRect().top + window.scrollY;
@@ -119,7 +118,7 @@ export function initCinematic() {
       if (grow <= 0) continue;
       const size = cellPx * grow;
       const alpha = smooth(cell.threshold, cell.threshold + 0.02, p);
-      ctx.fillStyle = BLUE_PALETTE[cell.ci];
+      ctx.fillStyle = BLUE;
       ctx.globalAlpha = alpha * fade * cell.jitter;
       ctx.fillRect(cell.x + half - size / 2, cell.y + half - size / 2, size, size);
     }
