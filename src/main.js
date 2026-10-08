@@ -6,9 +6,11 @@ import { initHeroIntro } from './hero-intro.js';
 import { initCountdown } from './countdown.js';
 import { initCinematic } from './cinematic.js';
 import { initFaq } from './faq.js';
+import { initTracks } from './tracks.js';
 
 initHeroGrid();
 initHeroIntro();
 initCountdown();
 initCinematic();
 initFaq();
+initTracks();

@@ -584,3 +584,80 @@ h1 {
     padding: 32px 0 48px;
   }
 }
+
+/* ---- tracks: three quiet cards with pixel-art canvases ---- */
+
+.tracks {
+  width: min(880px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 24px 0 80px;
+  scroll-snap-align: start;
+}
+
+.tracks h2 {
+  margin: 0 0 40px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
+.track-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.track-card {
+  text-align: center;
+}
+
+.track-art {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.track-canvas {
+  display: block;
+  width: 76%;
+  height: 76%;
+  image-rendering: pixelated;
+}
+
+/* shown only when JS is unavailable; hidden once canvases initialize */
+.track-art-fallback {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #d9d9d9;
+  letter-spacing: 0.02em;
+}
+
+.tracks-js .track-art-fallback {
+  display: none;
+}
+
+.track-card h3 {
+  margin: 18px 0 4px;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.track-sub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .track-grid {
+    grid-template-columns: 1fr;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+}
