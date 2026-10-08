@@ -89,16 +89,6 @@
   min-height: 0;
 }
 
-.has-cinematic .site-header {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: var(--content);
-  margin: 0;
-  z-index: 3;
-}
-
 .has-cinematic .hero {
   flex: 1;
 }
@@ -258,10 +248,6 @@
 /* ---------- small screens ---------- */
 
 @media (max-width: 560px) {
-  .has-cinematic .site-header {
-    padding: 20px 0;
-  }
-
   .holo-svg {
     height: min(48vh, 48svh, 420px);
   }
