@@ -162,7 +162,7 @@ export function initCinematic() {
     );
 
     // final text: in 0.70-0.78, brief hold, out 0.84-0.92
-    // (floating school logos live inside #layerFinal, so they fade with it)
+    // (the big school logo lives inside #layerFinal, so it fades with the text)
     const fIn = smooth(0.70, 0.78, p);
     const fOut = smooth(0.84, 0.92, p);
     setLayer(final, fIn * (1 - fOut), `translateY(${(28 * (1 - fIn)).toFixed(1)}px)`);

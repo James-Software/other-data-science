@@ -134,6 +134,7 @@
   width: auto;
   margin: 0;
   padding: 0 24px;
+  flex-direction: column;
 }
 
 .has-cinematic .layer-final p {
@@ -220,43 +221,26 @@
   }
 }
 
-/* ---------- floating school logos around the final text ---------- */
+/* ---------- big school logo above the final text ---------- */
 
-.layer-final {
-  position: relative;
-}
-
-.float-logos {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.float-logo {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
-  width: var(--s);
-  pointer-events: none;
-  animation: logo-float var(--d, 6s) ease-in-out infinite;
-  animation-delay: var(--dl, 0s);
-}
-
-.float-logo img {
+.final-logo {
   display: block;
-  width: 100%;
+  width: min(210px, 44vw);
   height: auto;
-  -webkit-user-drag: none;
+  margin: 0 auto 40px;
+  pointer-events: none;
   user-select: none;
+  -webkit-user-drag: none;
+  animation: final-logo-float 6s ease-in-out infinite;
 }
 
-@keyframes logo-float {
+@keyframes final-logo-float {
   0%,
   100% {
-    transform: translateY(-9px);
+    transform: translateY(-8px);
   }
   50% {
-    transform: translateY(9px);
+    transform: translateY(8px);
   }
 }
 
@@ -266,7 +250,7 @@
   .holo-tilt,
   .ca-outline,
   .scan-beam,
-  .float-logo {
+  .final-logo {
     animation: none;
   }
 }
@@ -282,8 +266,9 @@
     height: min(48vh, 48svh, 420px);
   }
 
-  /* smaller floating logos on narrow screens */
-  .float-logo {
-    width: calc(var(--s) * 0.62);
+  /* smaller hero logo on narrow screens */
+  .final-logo {
+    width: min(150px, 52vw);
+    margin-bottom: 28px;
   }
 }
