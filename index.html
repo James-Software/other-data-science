@@ -28,99 +28,142 @@
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
 
-    <div class="site-shell">
-      <header class="site-header">
-        <a class="wordmark" href="#top">Acalanes Data Fest</a>
-        <a
-          class="button button-small"
-          href="https://instagram.com/aca.datasci.club"
-          target="_blank"
-          rel="noreferrer"
-        >Get updates</a>
-      </header>
+    <div class="pin" id="pin">
+      <div class="stage" id="stage">
+        <div class="layer layer-hero" id="layerHero">
+          <header class="site-header">
+            <a class="wordmark" href="#pin">Acalanes Data Fest</a>
+            <a
+              class="button button-small"
+              href="https://instagram.com/aca.datasci.club"
+              target="_blank"
+              rel="noreferrer"
+            >Get updates</a>
+          </header>
 
-      <main class="hero" id="main-content">
-        <p class="eyebrow">Acalanes Data Science Club</p>
-        <h1>Acalanes Data Fest <span class="h1-blue">2026</span></h1>
-        <p class="subline">
-          A student-run data hackathon where Acalanes students turn real datasets into real ideas.
-        </p>
-        <p class="meta">Student-run &middot; Acalanes High School &middot; Date to be announced</p>
-        <a
-          class="button"
-          href="https://instagram.com/aca.datasci.club"
-          target="_blank"
-          rel="noreferrer"
-        >Follow for updates</a>
-      </main>
-
-      <section class="faq" aria-labelledby="faq-heading">
-        <h2 id="faq-heading">Questions</h2>
-        <div class="faq-list">
-          <details>
-            <summary>Who can take part?</summary>
-            <p>Acalanes Data Fest is for Acalanes students. If you go to Acalanes, you&rsquo;re in.</p>
-          </details>
-          <details>
-            <summary>Do I need experience with data?</summary>
-            <p>No. Beginners are welcome &mdash; curiosity matters more than experience, and mentors and peers will be around to help.</p>
-          </details>
-          <details>
-            <summary>How do teams work?</summary>
-            <p>Come with a team or find one when you arrive. Teams form around the questions people want to explore.</p>
-          </details>
-          <details>
-            <summary>How much does it cost?</summary>
-            <p>Nothing. It&rsquo;s free for all Acalanes students.</p>
-          </details>
-          <details>
-            <summary>When does registration open?</summary>
-            <p>Not yet &mdash; the date and details are still being confirmed. Follow
-              <a href="https://instagram.com/aca.datasci.club" target="_blank" rel="noreferrer">@aca.datasci.club</a>
-              on Instagram and you&rsquo;ll hear it first.</p>
-          </details>
+          <main class="hero" id="main-content">
+            <p class="eyebrow">Acalanes Data Science Club</p>
+            <h1>Acalanes Data Fest <span class="h1-blue">2026</span></h1>
+            <p class="subline">
+              A student-run data hackathon where Acalanes students turn real datasets into real ideas.
+            </p>
+            <p class="meta">Student-run &middot; Acalanes High School &middot; Date to be announced</p>
+            <a
+              class="button"
+              href="https://instagram.com/aca.datasci.club"
+              target="_blank"
+              rel="noreferrer"
+            >Follow for updates</a>
+          </main>
         </div>
-      </section>
 
-      <section class="sponsors" aria-labelledby="sponsors-heading">
-        <h2 id="sponsors-heading">Sponsors</h2>
-        <p class="sr-only">Sponsor logos to be announced.</p>
-        <div class="tier tier-gold">
-          <p class="tier-label">Gold</p>
-          <div class="tier-row" aria-hidden="true">
-            <div class="slot"></div>
-            <div class="slot"></div>
+        <canvas class="layer layer-squares" id="squares" aria-hidden="true"></canvas>
+
+        <div class="layer layer-text1" id="layerText1" aria-hidden="true">
+          <p>The Bay Area has always been the center of technology.</p>
+        </div>
+
+        <div class="layer layer-holo" id="layerHolo" aria-hidden="true">
+          <div class="holo-grid" aria-hidden="true"></div>
+          <div class="holo-tilt" aria-hidden="true">
+            <svg class="holo-svg" viewBox="0 0 260 400" role="img" aria-label="California state hologram">
+              <defs>
+                <clipPath id="ca-clip">
+                  <polygon points="78,52 58,110 72,168 52,226 68,282 96,338 158,338 192,262 214,186 232,108" />
+                </clipPath>
+                <linearGradient id="scan-grad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#cfe4ff" stop-opacity="0" />
+                  <stop offset="0.5" stop-color="#cfe4ff" stop-opacity="0.55" />
+                  <stop offset="1" stop-color="#cfe4ff" stop-opacity="0" />
+                </linearGradient>
+                <pattern id="holo-lines" width="260" height="14" patternUnits="userSpaceOnUse">
+                  <rect width="260" height="1.5" y="0" fill="#9cc4f5" opacity="0.35" />
+                </pattern>
+              </defs>
+              <g clip-path="url(#ca-clip)">
+                <rect x="0" y="0" width="260" height="400" fill="url(#holo-lines)" />
+                <rect class="scan-beam" x="0" y="-70" width="260" height="70" fill="url(#scan-grad)" />
+              </g>
+              <polygon
+                class="ca-outline"
+                points="78,52 58,110 72,168 52,226 68,282 96,338 158,338 192,262 214,186 232,108"
+              />
+            </svg>
           </div>
         </div>
-        <div class="tier tier-silver">
-          <p class="tier-label">Silver</p>
-          <div class="tier-row" aria-hidden="true">
-            <div class="slot"></div>
-            <div class="slot"></div>
-            <div class="slot"></div>
-            <div class="slot"></div>
-          </div>
-        </div>
-        <div class="tier tier-bronze">
-          <p class="tier-label">Bronze</p>
-          <div class="tier-row" aria-hidden="true">
-            <div class="slot"></div>
-            <div class="slot"></div>
-            <div class="slot"></div>
-            <div class="slot"></div>
-            <div class="slot"></div>
-            <div class="slot"></div>
-            <div class="slot"></div>
-            <div class="slot"></div>
-          </div>
-        </div>
-      </section>
 
-      <footer class="site-footer">
-        <p>&copy; 2026 Acalanes Data Science Club &middot;
-          <a href="https://instagram.com/aca.datasci.club" target="_blank" rel="noreferrer">@aca.datasci.club</a>
-        </p>
-      </footer>
+        <div class="layer layer-final" id="layerFinal">
+          <p>Acalanes Data Fest gathers <span class="final-blue">California&rsquo;s brightest</span> young innovators in one place.</p>
+        </div>
+      </div>
     </div>
+
+    <section class="faq" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">Questions</h2>
+      <div class="faq-list">
+        <details>
+          <summary>Who can take part?</summary>
+          <p>Acalanes Data Fest is for Acalanes students. If you go to Acalanes, you&rsquo;re in.</p>
+        </details>
+        <details>
+          <summary>Do I need experience with data?</summary>
+          <p>No. Beginners are welcome &mdash; curiosity matters more than experience, and mentors and peers will be around to help.</p>
+        </details>
+        <details>
+          <summary>How do teams work?</summary>
+          <p>Come with a team or find one when you arrive. Teams form around the questions people want to explore.</p>
+        </details>
+        <details>
+          <summary>How much does it cost?</summary>
+          <p>Nothing. It&rsquo;s free for all Acalanes students.</p>
+        </details>
+        <details>
+          <summary>When does registration open?</summary>
+          <p>Not yet &mdash; the date and details are still being confirmed. Follow
+            <a href="https://instagram.com/aca.datasci.club" target="_blank" rel="noreferrer">@aca.datasci.club</a>
+            on Instagram and you&rsquo;ll hear it first.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="sponsors" aria-labelledby="sponsors-heading">
+      <h2 id="sponsors-heading">Sponsors</h2>
+      <p class="sr-only">Sponsor logos to be announced.</p>
+      <div class="tier tier-gold">
+        <p class="tier-label">Gold</p>
+        <div class="tier-row" aria-hidden="true">
+          <div class="slot"></div>
+          <div class="slot"></div>
+        </div>
+      </div>
+      <div class="tier tier-silver">
+        <p class="tier-label">Silver</p>
+        <div class="tier-row" aria-hidden="true">
+          <div class="slot"></div>
+          <div class="slot"></div>
+          <div class="slot"></div>
+          <div class="slot"></div>
+        </div>
+      </div>
+      <div class="tier tier-bronze">
+        <p class="tier-label">Bronze</p>
+        <div class="tier-row" aria-hidden="true">
+          <div class="slot"></div>
+          <div class="slot"></div>
+          <div class="slot"></div>
+          <div class="slot"></div>
+          <div class="slot"></div>
+          <div class="slot"></div>
+          <div class="slot"></div>
+          <div class="slot"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <p>&copy; 2026 Acalanes Data Science Club &middot;
+        <a href="https://instagram.com/aca.datasci.club" target="_blank" rel="noreferrer">@aca.datasci.club</a>
+      </p>
+    </footer>
   </body>
 </html>

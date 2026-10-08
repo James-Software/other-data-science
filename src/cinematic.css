@@ -1,0 +1,232 @@
+/* Acalanes Data Fest 2026 — scroll cinematic.
+   Pinned 100svh stage inside a ~700svh wrapper; scroll progress drives
+   five phases: blue squares -> Bay Area text -> California hologram ->
+   fade out -> final text. Palette stays white / black / school blue.
+   Default (no JS, or prefers-reduced-motion): static, readable, no pinning. */
+
+:root {
+  --holo: #8fbdf5; /* lighter hologram blue */
+}
+
+/* ---------- static baseline: hero + final text in normal flow ---------- */
+
+.pin {
+  position: relative;
+}
+
+.stage {
+  position: relative;
+}
+
+.layer-hero {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+/* cinematic-only layers stay hidden until JS enables the sequence */
+.layer-squares,
+.layer-text1,
+.layer-holo {
+  display: none;
+}
+
+.layer-final {
+  width: min(880px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 72px 0 88px;
+  text-align: center;
+}
+
+.layer-final p {
+  margin: 0;
+  font-size: clamp(1.6rem, 4.2vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.final-blue {
+  color: var(--blue);
+}
+
+/* ---------- cinematic mode (JS + motion OK) ---------- */
+
+.has-cinematic .pin {
+  height: 700vh;
+  height: 700svh;
+}
+
+.has-cinematic .stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.has-cinematic .layer {
+  position: absolute;
+  inset: 0;
+  will-change: opacity, transform;
+}
+
+.has-cinematic .layer-hero {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.has-cinematic .site-header {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--content);
+  margin: 0;
+  z-index: 3;
+}
+
+.has-cinematic .hero {
+  flex: 1;
+}
+
+.has-cinematic .layer-squares {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.has-cinematic .layer-text1,
+.has-cinematic .layer-holo,
+.has-cinematic .layer-final {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 24px;
+  opacity: 0;
+}
+
+.has-cinematic .layer-text1 p {
+  margin: 0;
+  max-width: 22em;
+  color: #fff;
+  font-size: clamp(1.6rem, 4.2vw, 3rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.has-cinematic .layer-final {
+  width: auto;
+  margin: 0;
+  padding: 0 24px;
+}
+
+.has-cinematic .layer-final p {
+  max-width: 24em;
+  color: var(--ink);
+}
+
+/* ---------- hologram ---------- */
+
+.layer-holo {
+  perspective: 1000px;
+}
+
+.holo-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(143, 189, 245, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(143, 189, 245, 0.16) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(closest-side, black, transparent);
+  mask-image: radial-gradient(closest-side, black, transparent);
+  opacity: 0.55;
+}
+
+.holo-tilt {
+  position: relative;
+  transform-style: preserve-3d;
+  animation: holo-tilt 7s ease-in-out infinite;
+}
+
+.holo-svg {
+  display: block;
+  height: min(56vh, 56svh, 520px);
+  width: auto;
+  overflow: visible;
+}
+
+.ca-outline {
+  fill: rgba(143, 189, 245, 0.08);
+  stroke: var(--holo);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 14px rgba(143, 189, 245, 0.9));
+  animation: holo-flicker 4.2s linear infinite;
+}
+
+.scan-beam {
+  animation: holo-scan 3.4s linear infinite;
+}
+
+@keyframes holo-tilt {
+  0%,
+  100% {
+    transform: rotateX(4deg) rotateY(-7deg);
+  }
+  50% {
+    transform: rotateX(-4deg) rotateY(7deg);
+  }
+}
+
+@keyframes holo-flicker {
+  0%,
+  91%,
+  94%,
+  98%,
+  100% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 0.55;
+  }
+  97% {
+    opacity: 0.75;
+  }
+}
+
+@keyframes holo-scan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(540px);
+  }
+}
+
+/* ---------- reduced motion: keep the static baseline ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .holo-tilt,
+  .ca-outline,
+  .scan-beam {
+    animation: none;
+  }
+}
+
+/* ---------- small screens ---------- */
+
+@media (max-width: 560px) {
+  .has-cinematic .site-header {
+    padding: 20px 0;
+  }
+
+  .holo-svg {
+    height: min(48vh, 48svh, 420px);
+  }
+}
