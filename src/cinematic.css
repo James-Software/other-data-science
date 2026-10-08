@@ -1,5 +1,5 @@
 /* Acalanes Data Fest 2026 — scroll cinematic.
-   Pinned 100svh stage inside a ~700svh wrapper; scroll progress drives
+   Pinned 100svh stage inside a ~600svh wrapper; scroll progress drives
    five phases: blue squares -> Bay Area text -> California hologram ->
    fade out -> final text. Palette stays white / black / school blue.
    Default (no JS, or prefers-reduced-motion): static, readable, no pinning. */
@@ -54,8 +54,8 @@
 /* ---------- cinematic mode (JS + motion OK) ---------- */
 
 .has-cinematic .pin {
-  height: 700vh;
-  height: 700svh;
+  height: 600vh;
+  height: 600svh;
 }
 
 .has-cinematic .stage {

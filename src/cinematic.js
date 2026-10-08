@@ -1,6 +1,6 @@
 // Scroll cinematic for Acalanes Data Fest 2026.
 //
-// A ~700svh wrapper holds a sticky 100svh stage. Scroll progress p (0..1)
+// A ~600svh wrapper holds a sticky 100svh stage. Scroll progress p (0..1)
 // maps deterministically to phases — no time-based motion in the phase
 // logic; a rAF-throttled passive scroll listener re-renders on scroll only.
 //
@@ -8,7 +8,8 @@
 //   p 0.25-0.35  white text: "The Bay Area has always been the center of technology."
 //   p 0.35-0.50  3D California hologram (CSS idle animation, scroll-driven opacity)
 //   p 0.51-0.65  text 1, hologram, and squares fade out back to white
-//   p 0.67-1.00  final text, black on white with blue accent words
+//   p 0.70-0.92  final text: in 0.70-0.78, brief hold, out 0.84-0.92
+//                 (floating logos fade out with the final-text layer)
 //
 // prefers-reduced-motion (or no JS): the cinematic never enables and the
 // page falls back to a static hero + final text in normal flow.
@@ -160,9 +161,11 @@ export function initCinematic() {
       `translateY(${(vh * 0.05 * hIn).toFixed(1)}px) scale(${(0.9 + 0.1 * hIn).toFixed(3)})`,
     );
 
-    // final text: in 0.67-0.75, holds to the end of the pin
-    const fIn = smooth(0.67, 0.75, p);
-    setLayer(final, fIn, `translateY(${(28 * (1 - fIn)).toFixed(1)}px)`);
+    // final text: in 0.70-0.78, brief hold, out 0.84-0.92
+    // (floating school logos live inside #layerFinal, so they fade with it)
+    const fIn = smooth(0.70, 0.78, p);
+    const fOut = smooth(0.84, 0.92, p);
+    setLayer(final, fIn * (1 - fOut), `translateY(${(28 * (1 - fIn)).toFixed(1)}px)`);
   }
 
   let ticking = false;
