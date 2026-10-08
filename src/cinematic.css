@@ -205,7 +205,7 @@
     transform: translateY(0);
   }
   to {
-    transform: translateY(540px);
+    transform: translateY(740px); /* clears the 600-tall viewBox */
   }
 }
 
