@@ -8,7 +8,9 @@
 // hero is off-screen or faded out by the cinematic, and renders one static
 // frame under prefers-reduced-motion.
 
-const BLUE_RGB = '27, 73, 150'; // school blue #1b4996
+// Vibrant electric blues for the decorative squares (brand elements
+// elsewhere — buttons, headline accent, links — stay in school blue).
+const PALETTE = ['46,75,255', '31,60,255', '77,107,255']; // #2E4BFF, #1F3CFF, #4D6BFF
 const MAX_OPACITY = 0.12;
 const CELL = 5; // square size, CSS px
 const GAP = 7; // gap between squares, CSS px
@@ -31,6 +33,7 @@ export function initHeroGrid() {
   let rows = 0;
   let opacities = new Float32Array(0);
   let targets = new Float32Array(0);
+  let colorIdx = new Uint8Array(0);
   let raf = 0;
   let inView = true;
 
@@ -46,10 +49,12 @@ export function initHeroGrid() {
     const n = cols * rows;
     opacities = new Float32Array(n);
     targets = new Float32Array(n);
+    colorIdx = new Uint8Array(n);
     for (let i = 0; i < n; i++) {
       const v = Math.random() * MAX_OPACITY;
       opacities[i] = v;
       targets[i] = v;
+      colorIdx[i] = (Math.random() * PALETTE.length) | 0;
     }
   }
 
@@ -62,7 +67,7 @@ export function initHeroGrid() {
       for (let c = 0; c < cols; c++, i++) {
         const o = opacities[i];
         if (o < 0.004) continue;
-        ctx.fillStyle = `rgba(${BLUE_RGB},${o.toFixed(3)})`;
+        ctx.fillStyle = `rgba(${PALETTE[colorIdx[i]]},${o.toFixed(3)})`;
         ctx.fillRect(c * step, r * step, CELL, CELL);
       }
     }
