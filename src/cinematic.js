@@ -184,14 +184,6 @@ export function initCinematic() {
     tracks.style.visibility = dissolve <= 0.001 ? 'hidden' : 'visible';
     const lock = p >= 0.9 ? -((1 - p) * pinRange) : 0;
     tracks.style.transform = lock ? `translateY(${lock.toFixed(1)}px)` : '';
-
-    // Snap-point management: the tracks must NOT be a snap point while the
-    // dissolve plays — the browser factors the counter-transform into its
-    // snap-area math, which would pin scrollY mid-gesture and fight the
-    // scroll. Once the pin releases (p = 1) the snap point appears exactly
-    // at the rest position, so momentum overshoot settles back onto the
-    // tracks top instead of sailing past to the FAQ.
-    tracks.style.scrollSnapAlign = p >= 1 ? 'start' : 'none';
   }
 
   let ticking = false;

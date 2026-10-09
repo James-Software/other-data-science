@@ -18,10 +18,6 @@
 
 html {
   background: var(--bg);
-  /* Gentle snap between page sections. `proximity` (never `mandatory`)
-     so the pinned scroll cinematic is never hijacked: the pin wrapper
-     and sticky stage deliberately have no snap alignment. */
-  scroll-snap-type: y proximity;
 }
 
 body {
@@ -380,12 +376,6 @@ h1 {
 
 /* ---- faq: one quiet centered column ---- */
 
-.faq,
-.sponsors,
-.site-footer {
-  scroll-snap-align: start;
-}
-
 .faq {
   width: min(640px, calc(100% - 48px));
   margin: 0 auto;
@@ -591,10 +581,6 @@ h1 {
   width: min(880px, calc(100% - 48px));
   margin: 0 auto;
   padding: 24px 0 80px;
-  /* No static snap-align here: cinematic.js grants it dynamically only
-     once the pin has released (p = 1). A snap point during the dissolve
-     would fight the counter-transformed scroll (see below). */
-  scroll-snap-align: none;
 }
 
 /* Cross-dissolve from the cinematic finale (cinematic mode only): the
