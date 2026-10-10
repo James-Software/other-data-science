@@ -451,7 +451,7 @@ h1 {
 .tracks {
   width: min(880px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 24px 0 80px;
+  padding: 110px 0 80px; /* clears the fixed navbar on landing */
 }
 
 /* Cross-dissolve from the cinematic finale (cinematic mode only): the
