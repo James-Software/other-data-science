@@ -197,155 +197,26 @@ h1 {
   color: var(--muted);
 }
 
-/* ---- countdown ---- */
+/* ---- date placeholder ---- */
 
 .countdown {
   margin-top: 56px;
 }
 
-.cd-units {
-  display: flex;
-  justify-content: center;
-  gap: 44px;
-}
-
-.cd-unit {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-/* ---- flip-clock digits ---- */
-
-.flip {
-  display: inline-block;
-  font-size: clamp(1.6rem, 4vw, 2.25rem);
-  font-weight: 600;
-  color: #111;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.15;
-}
-
-.flip-card {
-  position: relative;
-  display: block;
-  background: #fff;
-  border: 1px solid #e9e9e9;
-  border-radius: 10px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  perspective: 380px;
-}
-
-.flip-half {
-  display: block;
-  height: 0.575em;
-  overflow: hidden;
-  background: #fff;
-}
-
-.flip-half > span {
-  display: block;
-  line-height: 1.15;
+.cd-tbd {
+  margin: 0;
   text-align: center;
-  padding: 0 0.38em;
-}
-
-.flip-top-static {
-  border-radius: 9px 9px 0 0;
-  box-shadow: inset 0 -1px 0 #f1f1f1; /* hairline seam between halves */
-}
-
-.flip-bottom-static {
-  border-radius: 0 0 9px 9px;
-}
-
-.flip-bottom-static > span,
-.flip-leaf-bottom > span {
-  transform: translateY(-0.575em); /* show the bottom half of the digits */
-}
-
-.flip-leaf {
-  position: absolute;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  visibility: hidden;
-  backface-visibility: hidden;
-}
-
-.flip-leaf.show {
-  visibility: visible;
-}
-
-.flip-leaf-top {
-  top: 0;
-  border-radius: 9px 9px 0 0;
-  transform-origin: 50% 100%;
-}
-
-.flip-leaf-bottom {
-  bottom: 0;
-  border-radius: 0 0 9px 9px;
-  transform-origin: 50% 0%;
-}
-
-/* Folded: edge-on, invisible, waiting to land. */
-.flip-leaf-bottom.folded {
-  transform: rotateX(90deg);
-  filter: brightness(0.6);
-  z-index: 3;
-}
-
-/* Phase 1: the old top half falls away, darkening as it turns. */
-.flip-leaf-top.fall {
-  z-index: 3;
-  animation: flip-fall 0.28s ease-in forwards;
-}
-
-@keyframes flip-fall {
-  from {
-    transform: rotateX(0deg);
-    filter: brightness(1);
-  }
-  to {
-    transform: rotateX(-90deg);
-    filter: brightness(0.6);
-  }
-}
-
-/* Phase 2: the new bottom half lands flat. */
-.flip-leaf-bottom.land {
-  z-index: 3;
-  animation: flip-land 0.28s ease-out forwards;
-}
-
-@keyframes flip-land {
-  from {
-    transform: rotateX(90deg);
-    filter: brightness(0.6);
-  }
-  to {
-    transform: rotateX(0deg);
-    filter: brightness(1);
-  }
-}
-
-.cd-label {
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.22em;
+  font-size: clamp(1.75rem, 5vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--blue);
 }
 
 @media (max-width: 560px) {
   .countdown {
     margin-top: 44px;
-  }
-
-  .cd-units {
-    gap: 28px;
   }
 }
 
