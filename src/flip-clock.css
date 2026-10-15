@@ -1,0 +1,125 @@
+/* Flip-clock countdown to Acalanes Data Fest 2026.
+   Split-flap cards: white, near-black tabular digits, school-blue restraint.
+   Pairs with flip-clock.js, which builds the DOM and drives the flip. */
+
+.flip-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: clamp(8px, 2.4vw, 18px);
+}
+
+.flip-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.flip {
+  position: relative;
+  width: clamp(68px, 17vw, 104px);
+  aspect-ratio: 5 / 6;
+  perspective: 400px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(17, 17, 17, 0.05),
+    0 10px 28px rgba(17, 17, 17, 0.09),
+    inset 0 0 0 1px #e9e9ec;
+  font-weight: 700;
+  font-size: clamp(1.9rem, 7.5vw, 3.1rem);
+  line-height: 1;
+  color: var(--ink);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Each half clips 50% of a full-card digit. The span is card-height and
+   centered, so the top and bottom halves tile into one seamless digit. */
+.flip-half {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.flip-half > span {
+  flex: none;
+  width: 100%;
+  height: 200%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.flip-top {
+  top: 0;
+  align-items: flex-start;
+  border-radius: 14px 14px 0 0;
+  background: #f6f6f8;
+}
+
+.flip-bottom {
+  bottom: 0;
+  align-items: flex-end;
+  border-radius: 0 0 14px 14px;
+  background: #ffffff;
+}
+
+/* The hinge line across the split. */
+.flip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  margin-top: -0.5px;
+  background: #e2e2e7;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Animated flaps sit above the statics. */
+.flip-flap {
+  z-index: 2;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  visibility: hidden;
+}
+
+.flip-flap-top {
+  top: 0;
+  align-items: flex-start;
+  border-radius: 14px 14px 0 0;
+  background: #f6f6f8;
+  transform-origin: 50% 100%;
+}
+
+.flip-flap-bottom {
+  bottom: 0;
+  align-items: flex-end;
+  border-radius: 0 0 14px 14px;
+  background: #ffffff;
+  transform-origin: 50% 0%;
+}
+
+.flip-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-flap {
+    transition: none !important;
+  }
+}
