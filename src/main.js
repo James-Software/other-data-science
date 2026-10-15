@@ -6,9 +6,11 @@ import { initHeroIntro } from './hero-intro.js';
 import { initCinematic } from './cinematic.js';
 import { initFaq } from './faq.js';
 import { initTracks } from './tracks.js';
+import { initFlipClock } from './flip-clock.js';
 
 initHeroGrid();
 initHeroIntro();
 initCinematic();
 initFaq();
 initTracks();
+initFlipClock();
