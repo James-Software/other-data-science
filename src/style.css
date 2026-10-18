@@ -454,17 +454,6 @@ h1 {
   padding: 110px 0 80px; /* clears the fixed navbar on landing */
 }
 
-/* Cross-dissolve from the cinematic finale (cinematic mode only): the
-   tracks section is pulled up beneath the stage's final viewport and
-   faded in by scroll progress in cinematic.js. While the dissolve plays,
-   a counter-transform there locks the tracks to the viewport so the page
-   holds perfectly still until the pin releases exactly at the tracks top. */
-.has-cinematic .tracks {
-  margin-top: -100svh;
-  opacity: 0;
-  will-change: transform, opacity;
-}
-
 .tracks h2 {
   margin: 0 0 40px;
   font-size: 1.5rem;

@@ -8,11 +8,10 @@
 //   p 0.25-0.35  white text: "The Bay Area has always been the center of technology."
 //   p 0.35-0.50  3D California hologram (CSS idle animation, scroll-driven opacity)
 //   p 0.51-0.65  text 1, hologram, and squares fade out back to white
-//   p 0.70-1.00  final text: in 0.70-0.78, hold 0.78-0.94, out 0.94-1.00
-//                 cross-dissolve into the Tracks section (pulled up beneath
-//                 the stage, faded in 0.90-1.00, counter-transform locked to
-//                 the viewport so the page holds still): at p = 1 the tracks
-//                 fill the viewport and the pin releases exactly at their top
+//   p 0.70-1.00  final text: in 0.70-0.78, holds at full opacity to 1.00.
+//                 No fade-out: at p = 1 the pin releases and the finale
+//                 scrolls out naturally with the stage, revealing the
+//                 Tracks section below in normal document flow.
 //
 // prefers-reduced-motion (or no JS): the cinematic never enables and the
 // page falls back to a static hero + final text in normal flow.
@@ -42,8 +41,7 @@ export function initCinematic() {
   const text1 = document.getElementById('layerText1');
   const holo = document.getElementById('layerHolo');
   const final = document.getElementById('layerFinal');
-  const tracks = document.querySelector('.tracks');
-  if (!pin || !stage || !canvas || !hero || !text1 || !holo || !final || !tracks) return;
+  if (!pin || !stage || !canvas || !hero || !text1 || !holo || !final) return;
 
   document.documentElement.classList.add('has-cinematic');
 
@@ -164,26 +162,13 @@ export function initCinematic() {
       `translateY(${(vh * 0.05 * hIn).toFixed(1)}px) scale(${(0.9 + 0.1 * hIn).toFixed(3)})`,
     );
 
-    // final text: in 0.70-0.78, hold 0.78-0.94, out 0.94-1.00
-    // (the big school logo lives inside #layerFinal, so it fades with the text)
+    // final text: in 0.70-0.78, then holds at full opacity to p = 1.
+    // (the big school logo lives inside #layerFinal and stays with the text)
+    // No fade-out here: when the pin releases at p = 1, the sticky stage
+    // scrolls away naturally and the Tracks section below scrolls into
+    // view in normal document flow.
     const fIn = smooth(0.70, 0.78, p);
-    const fOut = smooth(0.94, 1.0, p);
-    setLayer(final, fIn * (1 - fOut), `translateY(${(28 * (1 - fIn)).toFixed(1)}px)`);
-
-    // cross-dissolve into the tracks section: it sits pulled up beneath the
-    // stage's final viewport (see .has-cinematic .tracks); fade it in as the
-    // finale dissolves out, so at p = 1 the tracks fill the viewport and the
-    // pin releases with the tracks top exactly at the viewport top.
-    //
-    // While the dissolve plays the visible page must hold perfectly still:
-    // cancel the scroll translation with a counter-transform so the tracks
-    // stay locked to the viewport and only opacities change. At p = 1 the
-    // lock is exactly 0, so the handoff is seamless.
-    const dissolve = smooth(0.9, 1.0, p);
-    tracks.style.opacity = dissolve.toFixed(3);
-    tracks.style.visibility = dissolve <= 0.001 ? 'hidden' : 'visible';
-    const lock = p >= 0.9 ? -((1 - p) * pinRange) : 0;
-    tracks.style.transform = lock ? `translateY(${lock.toFixed(1)}px)` : '';
+    setLayer(final, fIn, `translateY(${(28 * (1 - fIn)).toFixed(1)}px)`);
   }
 
   let ticking = false;
