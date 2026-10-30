@@ -428,6 +428,22 @@ h1 {
   text-decoration: underline;
 }
 
+/* Hosted-by lockup: BRIDGEGOOD plays a supporting role (their brand
+   guidance), so the logo sits small in the footer with its own space. */
+.hosted-by {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.hosted-by img {
+  display: block;
+  height: 28px;
+  width: auto;
+}
+
 /* ---- small screens ---- */
 
 @media (max-width: 560px) {
