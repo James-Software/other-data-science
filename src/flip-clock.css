@@ -1,8 +1,7 @@
-/* Reel countdown to Acalanes Data Fest 2026.
-   Bike-lock wheels, not split-flap: each digit is a vertical strip of
-   0-9 sliding inside a window. White cards, near-black tabular digits,
-   school-blue restraint, matching the site. Pairs with flip-clock.js,
-   which builds the DOM and drives the wheels. */
+/* Countdown to Acalanes Data Fest 2026, rendered with NumberFlow.
+   The white cards, layout, and labels match the previous countdown;
+   the digits themselves are NumberFlow's sliding digits. Pairs with
+   flip-clock.js, which builds the DOM and drives the values. */
 
 .reel-row {
   display: flex;
@@ -23,66 +22,28 @@
   width: clamp(68px, 17vw, 104px);
   aspect-ratio: 5 / 6;
   display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 14px;
   background: #fff;
   box-shadow:
     0 1px 2px rgba(17, 17, 17, 0.05),
     0 10px 28px rgba(17, 17, 17, 0.09),
     inset 0 0 0 1px #e9e9ec;
-  font-weight: 700;
-  font-size: clamp(1.9rem, 7.5vw, 3.1rem);
-  line-height: 1;
-  color: var(--ink);
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* One digit window: half the card, clipping a single digit tall. */
-.reel {
-  position: relative;
-  flex: 1 1 50%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.reel + .reel {
-  border-left: 1px solid #ececf0;
-}
-
-/* The strip is 10 digits tall; each digit is 10% of it, so a
-   translateY of -digit * 10% lands exactly on that digit. */
-.reel-strip {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.reel-strip.is-animating {
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.reel-digit {
-  flex: 0 0 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* NumberFlow's own digits: large, bold, tabular, in the site's ink.
+   The mask height is its built-in top/bottom fade for sliding digits. */
+.reel-card number-flow {
+  font-weight: 700;
+  font-size: clamp(2.1rem, 8vw, 3.4rem);
+  line-height: 1;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
-}
-
-/* Soft top/bottom shading, like a wheel curving away from its window. */
-.reel-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.55),
-    transparent 22%,
-    transparent 78%,
-    rgba(17, 17, 17, 0.06)
-  );
-  pointer-events: none;
+  --number-flow-mask-height: 0.25em;
 }
 
 .reel-label {
@@ -92,10 +53,4 @@
   text-indent: 0.22em;
   text-transform: uppercase;
   color: var(--muted);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reel-strip {
-    transition: none !important;
-  }
 }
