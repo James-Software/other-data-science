@@ -1,7 +1,7 @@
 /* Countdown to Acalanes Data Fest 2026, rendered with NumberFlow.
-   The white cards, layout, and labels match the previous countdown;
-   the digits themselves are NumberFlow's sliding digits. Pairs with
-   flip-clock.js, which builds the DOM and drives the values. */
+   Plain numbers with no card or border around them, just the labels
+   below. Pairs with flip-clock.js, which builds the DOM and drives
+   the values. */
 
 .reel-row {
   display: flex;
@@ -19,17 +19,12 @@
 
 .reel-card {
   position: relative;
-  width: clamp(68px, 17vw, 104px);
-  aspect-ratio: 5 / 6;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
-  background: #fff;
-  box-shadow:
-    0 1px 2px rgba(17, 17, 17, 0.05),
-    0 10px 28px rgba(17, 17, 17, 0.09),
-    inset 0 0 0 1px #e9e9ec;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
