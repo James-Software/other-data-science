@@ -1,11 +1,13 @@
-// Flip-clock countdown to Acalanes Data Fest 2026.
+// Reel countdown to Acalanes Data Fest 2026.
 //
 // Target is doors-open morning of the event, Pacific time. If the real
 // start time differs, change TARGET below — everything else follows.
 //
-// Split-flap animation: on each change the top flap (old value) falls away,
-// the statics jump to the new value underneath, then the bottom flap (new
-// value) falls into place. Respects prefers-reduced-motion (snaps instead).
+// Bike-lock animation, not split-flap: every digit is its own vertical
+// wheel with 0-9 stacked in a column. When a digit changes, its wheel
+// slides to the new digit, rolling through the numbers in between on a
+// rollover (for example 0 back to 9), the way a combination-lock dial
+// spins through its numbers. Respects prefers-reduced-motion (snaps).
 import './flip-clock.css';
 
 const TARGET = new Date('2026-11-21T09:00:00-08:00');
@@ -17,7 +19,6 @@ const UNITS = [
   { key: 'secs', label: 'Sec' },
 ];
 
-const FLIP_MS = 260;
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function el(tag, cls, text) {
@@ -27,14 +28,32 @@ function el(tag, cls, text) {
   return n;
 }
 
-function half(cls) {
-  const d = el('div', 'flip-half ' + cls);
-  d.appendChild(el('span', null, '00'));
-  return d;
+// One bike-lock wheel: a window showing a single digit, with 0-9 stacked
+// in a strip that slides vertically to the current digit.
+function reel() {
+  const windowEl = el('div', 'reel');
+  const strip = el('div', 'reel-strip');
+  for (let d = 0; d <= 9; d += 1) {
+    strip.appendChild(el('span', 'reel-digit', String(d)));
+  }
+  windowEl.appendChild(strip);
+  return { windowEl, strip };
 }
 
-function setHalf(node, value) {
-  node.firstChild.textContent = value;
+function setReel(r, digit, animate) {
+  // translateY is a percentage of the strip's own height (10 digits tall),
+  // so -digit * 10% moves the strip exactly one digit height per digit.
+  const y = -digit * 10;
+  if (!animate || REDUCED) {
+    r.strip.classList.remove('is-animating');
+    r.strip.style.transform = `translateY(${y}%)`;
+    // Force the snap to paint before the transition class comes back,
+    // so the next change slides instead of jumping from a stale pose.
+    void r.strip.offsetWidth;
+    r.strip.classList.add('is-animating');
+  } else {
+    r.strip.style.transform = `translateY(${y}%)`;
+  }
 }
 
 export function initFlipClock() {
@@ -46,82 +65,32 @@ export function initFlipClock() {
     'sr-only',
     'Countdown to Acalanes Data Fest 2026, November 21, 2026 at 9:00 AM Pacific time.'
   );
-  const row = el('div', 'flip-row');
+  const row = el('div', 'reel-row');
   row.setAttribute('aria-hidden', 'true');
 
   const units = UNITS.map(({ key, label }) => {
-    const unit = el('div', 'flip-unit');
-    const card = el('div', 'flip');
-    const top = half('flip-top');
-    const bottom = half('flip-bottom');
-    const flapTop = half('flip-flap flip-flap-top');
-    const flapBottom = half('flip-flap flip-flap-bottom');
-    card.append(top, bottom, flapTop, flapBottom);
-    unit.append(card, el('span', 'flip-label', label));
+    const unit = el('div', 'reel-unit');
+    const card = el('div', 'reel-card');
+    const reels = [reel(), reel()];
+    reels.forEach((r) => card.appendChild(r.windowEl));
+    unit.append(card, el('span', 'reel-label', label));
     row.appendChild(unit);
-    return { key, top, bottom, flapTop, flapBottom, current: null, timer: 0 };
+    return { key, reels, current: null };
   });
 
-  // Replace the static date fallback with the live flip clock.
+  // Replace the static date fallback with the live reel countdown.
   mount.replaceChildren(sr, row);
   mount.setAttribute('role', 'timer');
   mount.setAttribute('aria-label', 'Countdown to Acalanes Data Fest 2026');
 
-  const snap = (u, v) => {
-    if (u.timer) {
-      clearTimeout(u.timer);
-      u.timer = 0;
-    }
-    setHalf(u.top, v);
-    setHalf(u.bottom, v);
-    u.flapTop.style.transition = 'none';
-    u.flapBottom.style.transition = 'none';
-    u.flapTop.style.visibility = 'hidden';
-    u.flapBottom.style.visibility = 'hidden';
-    u.current = v;
-  };
-
-  const flipTo = (u, prev, next) => {
-    if (u.timer) {
-      clearTimeout(u.timer);
-      u.timer = 0;
-    }
-    const { flapTop, flapBottom, top, bottom } = u;
-    setHalf(flapTop, prev);
-    setHalf(flapBottom, next);
-    // Start pose: top flap flat showing the old value, bottom flap folded
-    // up at 90 degrees showing the new value.
-    flapTop.style.transition = 'none';
-    flapBottom.style.transition = 'none';
-    flapTop.style.transform = 'rotateX(0deg)';
-    flapBottom.style.transform = 'rotateX(90deg)';
-    flapTop.style.visibility = 'visible';
-    flapBottom.style.visibility = 'visible';
-    void flapTop.offsetWidth; // paint the start pose before animating
-    // Phase 1 — the top flap falls away…
-    flapTop.style.transition = 'transform ' + FLIP_MS + 'ms ease-in';
-    flapTop.style.transform = 'rotateX(-90deg)';
-    u.timer = setTimeout(() => {
-      // …midpoint: statics jump to the new value underneath…
-      setHalf(top, next);
-      setHalf(bottom, next);
-      flapTop.style.visibility = 'hidden';
-      // …phase 2: the bottom flap falls into place.
-      flapBottom.style.transition = 'transform ' + FLIP_MS + 'ms ease-out';
-      flapBottom.style.transform = 'rotateX(0deg)';
-      u.timer = setTimeout(() => {
-        flapBottom.style.visibility = 'hidden';
-        u.timer = 0;
-      }, FLIP_MS + 40);
-    }, FLIP_MS + 40);
-    u.current = next;
-  };
-
   const render = (u, n) => {
     const v = String(n).padStart(2, '0');
     if (u.current === v) return;
-    if (REDUCED || u.current === null) snap(u, v);
-    else flipTo(u, u.current, v);
+    const animate = u.current !== null;
+    v.split('').forEach((ch, i) => {
+      setReel(u.reels[i], Number(ch), animate);
+    });
+    u.current = v;
   };
 
   const tick = () => {
