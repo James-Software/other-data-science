@@ -318,12 +318,13 @@ h1 {
   background: #eef3fe;
 }
 
-/* ---- faq: one quiet centered column ---- */
+/* ---- faq: white bubbles on a light grey band ---- */
 
 .faq {
-  width: min(640px, calc(100% - 48px));
+  width: 100%;
   margin: 0 auto;
-  padding: 24px 0 80px;
+  padding: 24px 24px 80px;
+  background: #f5f3ef;
 }
 
 .faq h2 {
@@ -334,20 +335,29 @@ h1 {
   text-align: center;
 }
 
-.faq details {
-  border-top: 1px solid #e6e6e6;
+.faq-list {
+  width: min(880px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.faq details:last-child {
-  border-bottom: 1px solid #e6e6e6;
+.faq details {
+  background: #ffffff;
+  border: 0;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(17, 17, 17, 0.06);
+  overflow: hidden;
 }
 
 .faq summary {
   list-style: none;
   cursor: pointer;
   position: relative;
-  padding: 20px 40px 20px 0;
-  font-weight: 500;
+  padding: 22px 56px 22px 28px;
+  font-weight: 600;
+  font-size: 1.05rem;
 }
 
 .faq summary::-webkit-details-marker {
@@ -357,12 +367,12 @@ h1 {
 .faq summary::after {
   content: "";
   position: absolute;
-  right: 10px;
+  right: 28px;
   top: 27px;
-  width: 9px;
-  height: 9px;
-  border-right: 2px solid var(--blue);
-  border-bottom: 2px solid var(--blue);
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #8a8a8a;
+  border-bottom: 2px solid #8a8a8a;
   transform: rotate(-45deg);
   transition: transform 0.25s ease-out;
 }
@@ -401,8 +411,10 @@ h1 {
 }
 
 .faq details p {
-  margin: 0 0 22px;
+  margin: 0;
+  padding: 0 28px 26px;
   color: var(--muted);
+  line-height: 1.55;
 }
 
 .faq details p a {
