@@ -94,7 +94,7 @@ a {
 
 .wordmark {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   font-weight: 600;
   font-size: 1.05rem;
@@ -105,11 +105,20 @@ a {
 }
 
 .wordmark-host {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.02em;
   color: var(--muted);
   white-space: nowrap;
+}
+
+.wordmark-logo {
+  display: block;
+  height: 18px;
+  width: auto;
 }
 
 .nav-actions {
@@ -188,10 +197,20 @@ h1 {
 /* hosted-by line directly under the hero title */
 .h1-host {
   margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-size: 1rem;
   font-weight: 500;
   letter-spacing: 0.04em;
   color: var(--muted);
+}
+
+.h1-logo {
+  display: block;
+  height: 24px;
+  width: auto;
 }
 
 /* blur-and-rise headline entrance (see hero-intro.js) */
@@ -523,6 +542,10 @@ h1 {
 
   .wordmark-host {
     font-size: 0.65rem;
+  }
+
+  .wordmark-logo {
+    height: 16px;
   }
 
   .hero {
