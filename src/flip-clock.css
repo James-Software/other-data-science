@@ -44,8 +44,16 @@
 .reel-label {
   font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.22em;
-  text-indent: 0.22em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: var(--muted);
+}
+
+/* Little light grey divider between timer units. */
+.reel-sep {
+  align-self: center;
+  width: 1px;
+  height: 2.75rem;
+  background: #e2e2e7;
+  flex: none;
 }
