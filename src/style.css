@@ -34,6 +34,18 @@ a {
   color: inherit;
 }
 
+/* ---- text selection: blue background, white text ---- */
+
+::selection {
+  background: var(--blue);
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background: var(--blue);
+  color: #ffffff;
+}
+
 /* ---- accessibility ---- */
 
 .skip-link {
