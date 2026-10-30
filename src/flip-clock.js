@@ -1,59 +1,33 @@
-// Reel countdown to Acalanes Data Fest 2026.
+// Countdown to Acalanes Data Fest 2026, rendered with NumberFlow.
 //
 // Target is doors-open morning of the event, Pacific time. If the real
 // start time differs, change TARGET below — everything else follows.
 //
-// Bike-lock animation, not split-flap: every digit is its own vertical
-// wheel with 0-9 stacked in a column. When a digit changes, its wheel
-// slides to the new digit, rolling through the numbers in between on a
-// rollover (for example 0 back to 9), the way a combination-lock dial
-// spins through its numbers. Respects prefers-reduced-motion (snaps).
+// NumberFlow is the vanilla `number-flow` package: the same custom-element
+// core the React wrapper wraps, so the animation is identical without
+// adding React to this vanilla Vite site. Each unit is one <number-flow>
+// element; when its value changes, NumberFlow slides its digits.
+// `trend: -1` makes digits always roll downward (a countdown), and
+// `digits` caps each position so rollovers wrap correctly (59 -> 00 for
+// minutes/seconds). It respects prefers-reduced-motion by default.
+import 'number-flow';
 import './flip-clock.css';
 
 const TARGET = new Date('2026-11-21T09:00:00-08:00');
 
+// Digit positions count from the units place: 0 = units, 1 = tens.
 const UNITS = [
-  { key: 'days', label: 'Days' },
-  { key: 'hours', label: 'Hrs' },
-  { key: 'mins', label: 'Min' },
-  { key: 'secs', label: 'Sec' },
+  { key: 'days', label: 'Days', digits: { 1: { max: 9 }, 0: { max: 9 } } },
+  { key: 'hours', label: 'Hrs', digits: { 1: { max: 2 }, 0: { max: 9 } } },
+  { key: 'mins', label: 'Min', digits: { 1: { max: 5 }, 0: { max: 9 } } },
+  { key: 'secs', label: 'Sec', digits: { 1: { max: 5 }, 0: { max: 9 } } },
 ];
-
-const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function el(tag, cls, text) {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
   if (text != null) n.textContent = text;
   return n;
-}
-
-// One bike-lock wheel: a window showing a single digit, with 0-9 stacked
-// in a strip that slides vertically to the current digit.
-function reel() {
-  const windowEl = el('div', 'reel');
-  const strip = el('div', 'reel-strip');
-  for (let d = 0; d <= 9; d += 1) {
-    strip.appendChild(el('span', 'reel-digit', String(d)));
-  }
-  windowEl.appendChild(strip);
-  return { windowEl, strip };
-}
-
-function setReel(r, digit, animate) {
-  // translateY is a percentage of the strip's own height (10 digits tall),
-  // so -digit * 10% moves the strip exactly one digit height per digit.
-  const y = -digit * 10;
-  if (!animate || REDUCED) {
-    r.strip.classList.remove('is-animating');
-    r.strip.style.transform = `translateY(${y}%)`;
-    // Force the snap to paint before the transition class comes back,
-    // so the next change slides instead of jumping from a stale pose.
-    void r.strip.offsetWidth;
-    r.strip.classList.add('is-animating');
-  } else {
-    r.strip.style.transform = `translateY(${y}%)`;
-  }
 }
 
 export function initFlipClock() {
@@ -68,29 +42,30 @@ export function initFlipClock() {
   const row = el('div', 'reel-row');
   row.setAttribute('aria-hidden', 'true');
 
-  const units = UNITS.map(({ key, label }) => {
+  const units = UNITS.map(({ key, label, digits }) => {
     const unit = el('div', 'reel-unit');
     const card = el('div', 'reel-card');
-    const reels = [reel(), reel()];
-    reels.forEach((r) => card.appendChild(r.windowEl));
+    const flow = document.createElement('number-flow');
+    flow.setAttribute('data-will-change', '');
+    flow.format = { minimumIntegerDigits: 2, useGrouping: false };
+    flow.digits = digits;
+    flow.trend = -1;
+    card.appendChild(flow);
     unit.append(card, el('span', 'reel-label', label));
     row.appendChild(unit);
-    return { key, reels, current: null };
+    return { key, flow, current: null };
   });
 
-  // Replace the static date fallback with the live reel countdown.
+  // Replace the static date fallback with the live countdown.
   mount.replaceChildren(sr, row);
   mount.setAttribute('role', 'timer');
   mount.setAttribute('aria-label', 'Countdown to Acalanes Data Fest 2026');
 
   const render = (u, n) => {
-    const v = String(n).padStart(2, '0');
-    if (u.current === v) return;
-    const animate = u.current !== null;
-    v.split('').forEach((ch, i) => {
-      setReel(u.reels[i], Number(ch), animate);
-    });
-    u.current = v;
+    if (u.current === n) return;
+    // The first update() hydrates the element; later ones animate.
+    u.flow.update(n);
+    u.current = n;
   };
 
   const tick = () => {
