@@ -104,6 +104,12 @@ a {
   white-space: nowrap;
 }
 
+.wordmark-icon {
+  display: block;
+  height: 38px;
+  width: auto;
+}
+
 .wordmark-host {
   display: inline-flex;
   align-items: center;
@@ -192,6 +198,15 @@ h1 {
 
 .h1-blue {
   color: var(--blue);
+}
+
+/* "WITH" in the BRIDGEGOOD wordmark's own style: bold, all caps,
+   navy #003366 sampled from the image itself. */
+.with-text {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #003366;
 }
 
 /* hosted-by line directly under the hero title */
