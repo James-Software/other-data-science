@@ -31,7 +31,14 @@
 }
 
 /* NumberFlow's own digits: large, bold, tabular, in the site's ink.
-   The mask height is its built-in top/bottom fade for sliding digits. */
+   The mask height is its built-in top/bottom fade for sliding digits.
+   The card has a fixed width, so a digit changing width (notably a
+   narrow "1") can never shift the row, the dividers, or the labels:
+   the number stays centered inside its fixed slot. */
+.reel-card {
+  width: clamp(84px, 20vw, 104px);
+}
+
 .reel-card number-flow {
   font-weight: 700;
   font-size: clamp(2.1rem, 8vw, 3.4rem);
@@ -39,6 +46,10 @@
   color: var(--ink);
   font-variant-numeric: tabular-nums;
   --number-flow-mask-height: 0.25em;
+}
+
+.reel-card number-flow::part(digit) {
+  font-variant-numeric: tabular-nums;
 }
 
 .reel-label {
