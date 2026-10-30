@@ -1,26 +1,28 @@
-/* Flip-clock countdown to Acalanes Data Fest 2026.
-   Split-flap cards: white, near-black tabular digits, school-blue restraint.
-   Pairs with flip-clock.js, which builds the DOM and drives the flip. */
+/* Reel countdown to Acalanes Data Fest 2026.
+   Bike-lock wheels, not split-flap: each digit is a vertical strip of
+   0-9 sliding inside a window. White cards, near-black tabular digits,
+   school-blue restraint, matching the site. Pairs with flip-clock.js,
+   which builds the DOM and drives the wheels. */
 
-.flip-row {
+.reel-row {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   gap: clamp(8px, 2.4vw, 18px);
 }
 
-.flip-unit {
+.reel-unit {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
 }
 
-.flip {
+.reel-card {
   position: relative;
   width: clamp(68px, 17vw, 104px);
   aspect-ratio: 5 / 6;
-  perspective: 400px;
+  display: flex;
   border-radius: 14px;
   background: #fff;
   box-shadow:
@@ -31,85 +33,59 @@
   font-size: clamp(1.9rem, 7.5vw, 3.1rem);
   line-height: 1;
   color: var(--ink);
+  overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* Each half clips 50% of a full-card digit. The span is card-height and
-   centered, so the top and bottom halves tile into one seamless digit. */
-.flip-half {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 50%;
+/* One digit window: half the card, clipping a single digit tall. */
+.reel {
+  position: relative;
+  flex: 1 1 50%;
+  height: 100%;
   overflow: hidden;
-  display: flex;
-  justify-content: center;
 }
 
-.flip-half > span {
-  flex: none;
-  width: 100%;
-  height: 200%;
+.reel + .reel {
+  border-left: 1px solid #ececf0;
+}
+
+/* The strip is 10 digits tall; each digit is 10% of it, so a
+   translateY of -digit * 10% lands exactly on that digit. */
+.reel-strip {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.reel-strip.is-animating {
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reel-digit {
+  flex: 0 0 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-variant-numeric: tabular-nums;
 }
 
-.flip-top {
-  top: 0;
-  align-items: flex-start;
-  border-radius: 14px 14px 0 0;
-  background: #f6f6f8;
-}
-
-.flip-bottom {
-  bottom: 0;
-  align-items: flex-end;
-  border-radius: 0 0 14px 14px;
-  background: #ffffff;
-}
-
-/* The hinge line across the split. */
-.flip::after {
+/* Soft top/bottom shading, like a wheel curving away from its window. */
+.reel-card::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 1px;
-  margin-top: -0.5px;
-  background: #e2e2e7;
-  z-index: 3;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.55),
+    transparent 22%,
+    transparent 78%,
+    rgba(17, 17, 17, 0.06)
+  );
   pointer-events: none;
 }
 
-/* Animated flaps sit above the statics. */
-.flip-flap {
-  z-index: 2;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  visibility: hidden;
-}
-
-.flip-flap-top {
-  top: 0;
-  align-items: flex-start;
-  border-radius: 14px 14px 0 0;
-  background: #f6f6f8;
-  transform-origin: 50% 100%;
-}
-
-.flip-flap-bottom {
-  bottom: 0;
-  align-items: flex-end;
-  border-radius: 0 0 14px 14px;
-  background: #ffffff;
-  transform-origin: 50% 0%;
-}
-
-.flip-label {
+.reel-label {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.22em;
@@ -119,7 +95,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flip-flap {
+  .reel-strip {
     transition: none !important;
   }
 }
