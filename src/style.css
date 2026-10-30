@@ -624,6 +624,14 @@ h1 {
   font-weight: 600;
 }
 
+/* BRIDGEGOOD wordmark above the showcase text */
+.showcase-logo {
+  display: block;
+  width: 200px;
+  height: auto;
+  margin: 0 auto 24px;
+}
+
 .showcase p {
   max-width: 560px;
   margin: 0 auto;
