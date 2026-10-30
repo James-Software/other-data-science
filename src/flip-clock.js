@@ -18,9 +18,9 @@ const TARGET = new Date('2026-11-21T09:00:00-08:00');
 // Digit positions count from the units place: 0 = units, 1 = tens.
 const UNITS = [
   { key: 'days', label: 'Days', digits: { 1: { max: 9 }, 0: { max: 9 } } },
-  { key: 'hours', label: 'Hrs', digits: { 1: { max: 2 }, 0: { max: 9 } } },
-  { key: 'mins', label: 'Min', digits: { 1: { max: 5 }, 0: { max: 9 } } },
-  { key: 'secs', label: 'Sec', digits: { 1: { max: 5 }, 0: { max: 9 } } },
+  { key: 'hours', label: 'Hours', digits: { 1: { max: 2 }, 0: { max: 9 } } },
+  { key: 'mins', label: 'Minutes', digits: { 1: { max: 5 }, 0: { max: 9 } } },
+  { key: 'secs', label: 'Seconds', digits: { 1: { max: 5 }, 0: { max: 9 } } },
 ];
 
 function el(tag, cls, text) {
@@ -42,7 +42,7 @@ export function initFlipClock() {
   const row = el('div', 'reel-row');
   row.setAttribute('aria-hidden', 'true');
 
-  const units = UNITS.map(({ key, label, digits }) => {
+  const units = UNITS.map(({ key, label, digits }, i) => {
     const unit = el('div', 'reel-unit');
     const card = el('div', 'reel-card');
     const flow = document.createElement('number-flow');
@@ -53,6 +53,8 @@ export function initFlipClock() {
     card.appendChild(flow);
     unit.append(card, el('span', 'reel-label', label));
     row.appendChild(unit);
+    // Light grey divider between units, not after the last one.
+    if (i < UNITS.length - 1) row.appendChild(el('span', 'reel-sep'));
     return { key, flow, current: null };
   });
 
