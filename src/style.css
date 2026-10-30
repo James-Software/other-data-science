@@ -245,6 +245,24 @@ h1 {
   font-size: 0.9rem;
 }
 
+/* hero CTAs: Register leads, Follow for updates sits secondary */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.button-secondary {
+  background: #fff;
+  color: var(--blue);
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.button-secondary:hover {
+  background: #eef3fe;
+}
+
 /* ---- faq: one quiet centered column ---- */
 
 .faq {
@@ -426,6 +444,13 @@ h1 {
 
 .site-footer a:hover {
   text-decoration: underline;
+}
+
+/* Discord icon in the footer social line */
+.discord-icon {
+  height: 20px;
+  width: auto;
+  vertical-align: middle;
 }
 
 /* Hosted-by lockup: BRIDGEGOOD plays a supporting role (their brand
