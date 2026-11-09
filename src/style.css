@@ -515,6 +515,30 @@ h1 {
   height: 60px;
 }
 
+.tier-in-kind .slot {
+  width: 168px;
+  height: 84px;
+}
+
+/* filled sponsor slot: logo centered inside the outline box */
+.slot-filled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot-filled a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot-filled img {
+  display: block;
+  max-width: 132px;
+  max-height: 48px;
+}
+
 /* ---- footer: one slim centered line ---- */
 
 .site-footer {
